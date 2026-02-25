@@ -22,8 +22,10 @@ public class JamSession {
     private Long id;
     @Column(name = "session_code", unique = true, nullable = false)
     private String sessionCode;
-    @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+    @Column(name = "is_public", nullable = false)
+    private boolean isPublic;
+    @Column(nullable = false)
+    private int size;
 
     @OneToOne(
             fetch = FetchType.LAZY,

@@ -70,9 +70,6 @@ public class AuthenticationServiceImp implements AuthenticationService {
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setCreatedAt(LocalDateTime.now());
-        user.setStatus(UserStatus.ONLINE);
-        user.setDisplayName(request.getDisplayName());
-        user.setSubscriptionType(SubscriptionType.FREE);
         user.setRole(Role.USER);
 
         userRepo.save(user);
