@@ -30,7 +30,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String updateProfile(UserUpdateProfileDTO dto) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 

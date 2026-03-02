@@ -41,7 +41,7 @@ public class FriendshipServiceImp implements FriendshipService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String deleteFriend(Long friendId) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 

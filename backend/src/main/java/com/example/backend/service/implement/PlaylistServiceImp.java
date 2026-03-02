@@ -35,7 +35,7 @@ public class PlaylistServiceImp implements PlaylistService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String createPlaylist(String name) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
@@ -48,7 +48,7 @@ public class PlaylistServiceImp implements PlaylistService {
     }
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String deletePlaylist(Long playlistId) {
         playlistRepo.deleteById(playlistId);
         return "Playlist deleted successfully!";

@@ -1,6 +1,7 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.TagDTO;
+import com.example.backend.dto.track.TrackReviewDTO;
 import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
 import com.example.backend.entity.ArtistContribution;
@@ -29,6 +30,11 @@ public abstract class TrackMapper {
     @Mapping(source = "tags", target = "recommendedTags", qualifiedByName = "mapTrackTagToTagDTO")
     @Mapping(source = "contributions", target = "featuredArtists", qualifiedByName = "mapContributionToProfilePreview")
     public abstract TrackDraftResponseDTO toTrackDraftResponse(Track track);
+
+    @Mapping(source = "fileKey", target = "trackUrl", qualifiedByName = "mapTrackKeyToUrl")
+    @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
+    @Mapping(source = "tags", target = "tags", qualifiedByName = "mapTrackTagToTagDTO")
+    public abstract TrackReviewDTO toTrackAdminReviewDTO(Track track);
 
     @Named("mapTrackKeyToUrl")
     protected String mapTrackKeyToUrl(String key){

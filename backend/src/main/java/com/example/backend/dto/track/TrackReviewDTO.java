@@ -4,11 +4,11 @@ import com.example.backend.dto.TagDTO;
 
 import java.util.List;
 
-public record TrackAdminReviewDTO(
+public record TrackReviewDTO(
         Long trackId,
         String title,
+        int duration,
         String trackUrl,
         String thumbnailUrl,
-        List<TagDTO> recommendedTags
-) {
-}
+        List<TagDTO> tags
+) {}

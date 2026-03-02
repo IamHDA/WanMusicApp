@@ -23,7 +23,7 @@ public class MemberServiceImp implements MemberService {
     private final FriendshipService friendshipService;
 
     @Override
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     public String updateProfile(UserUpdateProfileDTO dto) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 

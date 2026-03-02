@@ -41,7 +41,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final TokenRepository tokenRepo;
     private final PasswordEncoder passwordEncoder;
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public AuthenticationResponse login(LogInRequest request) {
         if(userRepo.findByEmail(request.email()).isEmpty()){
@@ -66,7 +66,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         return new AuthenticationResponse(accessToken, refreshToken, "Logged in successfully!");
     }
 
-    @Transactional
+    @Transactional(rollbackFor = Exception.class)
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
         if(userRepo.findByEmail(request.email()).isPresent()){
