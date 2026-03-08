@@ -2,7 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.PageResponse;
-import com.example.backend.dto.track.TrackReviewDTO;
+import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +18,7 @@ public class AdminController {
     private final TrackService trackService;
 
     @GetMapping("/getAllPendingTrack")
-    public ResponseEntity<PageResponse<TrackReviewDTO>> getAllPendingTracks(@RequestParam(defaultValue = "1") int index, @RequestParam(defaultValue = "6") int size){
+    public ResponseEntity<PageResponse<TrackAdminReviewDTO>> getAllPendingTracks(@RequestParam(defaultValue = "1") int index, @RequestParam(defaultValue = "6") int size){
         return ResponseEntity.ok(trackService.getTracksByStatus(TrackStatus.PENDING, index - 1, size));
     }
 

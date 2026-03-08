@@ -1,6 +1,6 @@
 package com.example.backend.dto.user;
 
-public record UserUpdateProfileDTO (
+public record MemberUpdateProfileDTO(
         String displayName,
         String avatarKey
 ){}

@@ -1,7 +1,7 @@
 package com.example.backend.dto.track;
 
 import com.example.backend.dto.TagDTO;
-import com.example.backend.dto.user.UserPreviewDTO;
+import com.example.backend.dto.user.MemberPreviewDTO;
 
 import java.util.List;
 
@@ -11,5 +11,5 @@ public record TrackDraftResponseDTO (
         String trackUrl,
         String thumbnailUrl,
         List<TagDTO> recommendedTags,
-        List<UserPreviewDTO> featuredArtists
+        List<MemberPreviewDTO> featuredArtists
 ){}

@@ -1,7 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.user.ArtistProfileDTO;
-import com.example.backend.dto.user.UserUpdateProfileDTO;
+import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.ArtistProfile;
 import com.example.backend.mapper.ArtistProfileMapper;
 import com.example.backend.repository.ArtistProfileRepository;
@@ -31,7 +31,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String updateProfile(UserUpdateProfileDTO dto) {
+    public String updateProfile(MemberUpdateProfileDTO dto) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         ArtistProfile profile = artistProfileRepo.findByMemberId(currentUserId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));

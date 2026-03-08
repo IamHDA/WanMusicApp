@@ -1,9 +1,11 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.TagDTO;
-import com.example.backend.dto.track.TrackReviewDTO;
-import com.example.backend.dto.user.UserPreviewDTO;
+import com.example.backend.dto.track.TrackAdminReviewDTO;
+import com.example.backend.dto.track.TrackPreviewDTO;
+import com.example.backend.dto.user.MemberPreviewDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
+import com.example.backend.dto.user.TrackContributorDTO;
 import com.example.backend.entity.ArtistContribution;
 import com.example.backend.entity.Track;
 import com.example.backend.entity.TrackTag;
@@ -25,6 +27,10 @@ public abstract class TrackMapper {
     @Autowired
     private S3StorageService s3StorageService;
 
+    @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
+    @Mapping(source = "contributions", target = "contributors", qualifiedByName = "mapTrackContributionsToNamePreview")
+    public abstract TrackPreviewDTO toTrackDTO(Track track);
+
     @Mapping(source = "fileKey", target = "trackUrl", qualifiedByName = "mapTrackKeyToUrl")
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
     @Mapping(source = "tags", target = "recommendedTags", qualifiedByName = "mapTrackTagToTagDTO")
@@ -34,7 +40,7 @@ public abstract class TrackMapper {
     @Mapping(source = "fileKey", target = "trackUrl", qualifiedByName = "mapTrackKeyToUrl")
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
     @Mapping(source = "tags", target = "tags", qualifiedByName = "mapTrackTagToTagDTO")
-    public abstract TrackReviewDTO toTrackAdminReviewDTO(Track track);
+    public abstract TrackAdminReviewDTO toTrackAdminReviewDTO(Track track);
 
     @Named("mapTrackKeyToUrl")
     protected String mapTrackKeyToUrl(String key){
@@ -53,8 +59,15 @@ public abstract class TrackMapper {
                 .toList();
     }
 
+    @Named("mapTrackContributionsToNamePreview")
+    protected List<TrackContributorDTO> mapTrackContributionsToNamePreview(List<ArtistContribution> contributions){
+        return contributions.stream()
+                .map(ac -> artistProfileMapper.toTrackContributorDTO(ac.getContributor()))
+                .toList();
+    }
+
     @Named("mapContributionToProfilePreview")
-    protected List<UserPreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
+    protected List<MemberPreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
         return contributions.stream()
                 .map(artistContribution -> artistProfileMapper.toPreviewDTO(artistContribution.getContributor()))
                 .toList();

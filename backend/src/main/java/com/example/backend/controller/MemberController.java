@@ -1,7 +1,7 @@
 package com.example.backend.controller;
 
 import com.example.backend.dto.user.MemberProfileDTO;
-import com.example.backend.dto.user.UserUpdateProfileDTO;
+import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.service.MemberService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -20,7 +20,7 @@ public class MemberController {
     }
 
     @PostMapping("/updateProfile")
-    public ResponseEntity<String> updateProfile(@RequestBody UserUpdateProfileDTO dto){
+    public ResponseEntity<String> updateProfile(@RequestBody MemberUpdateProfileDTO dto){
         return ResponseEntity.ok(memberService.updateProfile(dto));
     }
 }

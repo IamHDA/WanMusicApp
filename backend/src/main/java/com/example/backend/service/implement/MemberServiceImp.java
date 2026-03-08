@@ -1,11 +1,10 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.user.MemberProfileDTO;
-import com.example.backend.dto.user.UserUpdateProfileDTO;
+import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.mapper.MemberMapper;
 import com.example.backend.repository.MemberRepository;
-import com.example.backend.repository.UserRepository;
 import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,7 +23,7 @@ public class MemberServiceImp implements MemberService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String updateProfile(UserUpdateProfileDTO dto) {
+    public String updateProfile(MemberUpdateProfileDTO dto) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         Member currentMember = memberRepo.findById(currentUserId).orElseThrow(()-> new RuntimeException("Member not found!")) ;

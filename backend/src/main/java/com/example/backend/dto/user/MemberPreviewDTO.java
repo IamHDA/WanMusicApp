@@ -1,6 +1,6 @@
 package com.example.backend.dto.user;
 
-public record UserPreviewDTO (
+public record MemberPreviewDTO(
         Long id,
         String avatarUrl,
         String name

@@ -4,7 +4,7 @@ import com.example.backend.dto.TagDTO;
 
 import java.util.List;
 
-public record TrackReviewDTO(
+public record TrackAdminReviewDTO(
         Long trackId,
         String title,
         int duration,

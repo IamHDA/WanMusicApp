@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.dto.playlist.PlaylistDTO;
 import com.example.backend.dto.playlist.PlaylistPreviewDTO;
 import com.example.backend.entity.Playlist;
 import com.example.backend.mapper.PlaylistMapper;
@@ -24,6 +25,13 @@ public class PlaylistServiceImp implements PlaylistService {
     private final PlaylistMapper playlistMapper;
     private final PlaylistRepository playlistRepo;
 
+
+    @Override
+    public PlaylistDTO getPlaylistById(Long playlistId) {
+        Playlist foundPlaylist = playlistRepo.findById(playlistId).orElseThrow(()-> new RuntimeException("Playlist not found!"));
+        return playlistMapper.toPlaylistDTO(foundPlaylist);
+    }
+
     @Override
     public List<PlaylistPreviewDTO> getPlaylistsByOwnerId(Long ownerId) {
         return playlistMapper.toPlaylistPreviewDTOList(playlistRepo.findAllByOwnerId(ownerId).orElseThrow(()-> new RuntimeException("Playlist not found!")));
@@ -36,7 +44,7 @@ public class PlaylistServiceImp implements PlaylistService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String createPlaylist(String name) {
+    public Long createPlaylist(String name) {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         Playlist playlist = new Playlist();
@@ -44,7 +52,8 @@ public class PlaylistServiceImp implements PlaylistService {
         playlist.setOwner(memberRepo.findById(currentUserId).orElseThrow(()-> new RuntimeException("Member not found!")));
 
         playlistRepo.save(playlist);
-        return "Playlist created successfully!";
+
+        return playlist.getId();
     }
 
     @Override

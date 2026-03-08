@@ -1,5 +1,6 @@
 package com.example.backend.mapper;
 
+import com.example.backend.dto.user.MemberPreviewDTO;
 import com.example.backend.dto.user.MemberProfileDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.service.S3StorageService;
@@ -17,6 +18,10 @@ public abstract class MemberMapper {
     @Mapping(source = "fullName", target = "displayName")
     @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "memberAvatarKeyToUrl")
     public abstract MemberProfileDTO toProfileDTO(Member member);
+
+    @Mapping(source = "fullName", target = "name")
+    @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "memberAvatarKeyToUrl")
+    public abstract MemberPreviewDTO toPreviewDTO(Member member);
 
     @Named("memberAvatarKeyToUrl")
     protected String mapKeyToUrl(String avatarKey){

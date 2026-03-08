@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -44,14 +45,16 @@ public class AuthenticationServiceImp implements AuthenticationService {
     @Transactional(rollbackFor = Exception.class)
     @Override
     public AuthenticationResponse login(LogInRequest request) {
-        if(userRepo.findByEmail(request.email()).isEmpty()){
-            return new AuthenticationResponse(null, null, "Account not found!");
+        Optional<Member> member = memberRepo.findByEmail(request.email());
+
+        if(member.isEmpty()){
+            return new AuthenticationResponse(null, null, null, "Account not found!");
         }
 
         try{
             authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(request.email(), request.password()));
         }catch (BadCredentialsException e){
-            return new AuthenticationResponse(null, null, "Invalid credentials!");
+            return new AuthenticationResponse(null, null, null, "Invalid credentials!");
         }
 
         UserDetails userDetails = userDetailsService.loadUserByUsername(request.email());
@@ -63,14 +66,14 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
         memberRepo.updateUserStatus(request.email(), UserStatus.ONLINE);
 
-        return new AuthenticationResponse(accessToken, refreshToken, "Logged in successfully!");
+        return new AuthenticationResponse(member.get().getId(), accessToken, refreshToken, "Logged in successfully!");
     }
 
     @Transactional(rollbackFor = Exception.class)
     @Override
     public AuthenticationResponse register(RegisterRequest request) {
         if(userRepo.findByEmail(request.email()).isPresent()){
-            return new AuthenticationResponse(null, null, "Account already exists!");
+            return new AuthenticationResponse(null, null, null, "Account already exists!");
         }
         Member member = new Member();
         member.setEmail(request.email());
@@ -91,7 +94,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
 
         saveToken(request.email(), accessToken, refreshToken);
 
-        return new AuthenticationResponse(accessToken, refreshToken, "Account created successfully!");
+        return new AuthenticationResponse(member.getId(),accessToken, refreshToken, "Account created successfully!");
     }
 
     @Override

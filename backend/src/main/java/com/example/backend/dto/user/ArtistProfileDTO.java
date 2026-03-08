@@ -2,7 +2,7 @@ package com.example.backend.dto.user;
 
 import com.example.backend.dto.AlbumDTO;
 import com.example.backend.dto.PageResponse;
-import com.example.backend.dto.TrackDTO;
+import com.example.backend.dto.track.TrackDTO;
 import lombok.Data;
 
 import java.util.List;

@@ -3,7 +3,7 @@ package com.example.backend.service.implement;
 import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.UpdateTrackStatusDTO;
-import com.example.backend.dto.track.TrackReviewDTO;
+import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.dto.track.TrackCreateDraftDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
 import com.example.backend.dto.track.TrackSubmitDTO;
@@ -13,11 +13,9 @@ import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TrackRepository;
-import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,7 +33,7 @@ public class TrackServiceImp implements TrackService {
     private final PageMapper pageMapper;
 
     @Override
-    public PageResponse<TrackReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
+    public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
         return pageMapper.toPageResponse(trackRepo.findAllByStatus(status, PageRequest.of(index, size)), trackMapper::toTrackAdminReviewDTO);
     }
 
