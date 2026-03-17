@@ -45,6 +45,14 @@ public class Playlist {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    private List<PlaylistCollaborator> collaborators;
+
+    @OneToMany(
+            mappedBy = "playlist",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
     private List<SharedPlaylist> sharedPlaylists;
 
     @OneToMany(

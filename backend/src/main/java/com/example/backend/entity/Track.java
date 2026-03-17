@@ -29,6 +29,8 @@ public class Track {
     private String fileKey;
     @Column(nullable = false)
     private int duration;
+    @Column(name = "is_explicit", nullable = false)
+    private boolean isExplicit;
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private TrackStatus status;

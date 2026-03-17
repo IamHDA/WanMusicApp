@@ -44,6 +44,13 @@ public class Member extends User{
     private List<Friendship> friends;
 
     @OneToMany(
+            mappedBy = "collaborator",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL
+    )
+    private List<PlaylistCollaborator> collabPlaylists;
+
+    @OneToMany(
             mappedBy = "owner",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL

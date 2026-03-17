@@ -1,7 +1,8 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.user.ArtistProfileDTO;
-import com.example.backend.dto.user.UserPreviewDTO;
+import com.example.backend.dto.user.MemberPreviewDTO;
+import com.example.backend.dto.user.TrackContributorDTO;
 import com.example.backend.entity.ArtistProfile;
 import com.example.backend.service.S3StorageService;
 import org.mapstruct.Mapper;
@@ -16,8 +17,11 @@ public abstract class ArtistProfileMapper {
     private S3StorageService s3StorageService;
 
     @Mapping(source = "stageName", target = "name")
+    public abstract TrackContributorDTO toTrackContributorDTO(ArtistProfile artistProfile);
+
+    @Mapping(source = "stageName", target = "name")
     @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
-    public abstract UserPreviewDTO toPreviewDTO(ArtistProfile artistProfile);
+    public abstract MemberPreviewDTO toPreviewDTO(ArtistProfile artistProfile);
 
     @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
     @Mapping(source = "coverKey", target = "coverUrl", qualifiedByName = "mapCoverKeyToUrl")
