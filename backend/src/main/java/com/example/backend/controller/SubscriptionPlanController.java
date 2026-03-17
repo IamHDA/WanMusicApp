@@ -5,11 +5,13 @@ import com.example.backend.dto.UpdateSubscriptionPlanDTO;
 import com.example.backend.service.SubscriptionPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/v1/subscription-plan")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 public class SubscriptionPlanController {
 
     private final SubscriptionPlanService subscriptionPlanService;
