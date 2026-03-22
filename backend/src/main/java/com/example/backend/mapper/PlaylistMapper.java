@@ -2,7 +2,7 @@ package com.example.backend.mapper;
 
 import com.example.backend.dto.playlist.PlaylistDTO;
 import com.example.backend.dto.playlist.PlaylistPreviewDTO;
-import com.example.backend.dto.user.MemberPreviewDTO;
+import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.entity.Playlist;
 import com.example.backend.entity.PlaylistCollaborator;
 import com.example.backend.service.S3StorageService;
@@ -36,7 +36,7 @@ public abstract class PlaylistMapper {
     }
 
     @Named("mapCollaboratorToUserPreviewDTO")
-    protected List<MemberPreviewDTO> mapCollaboratorToUserPreviewDTO(List<PlaylistCollaborator> collaborators){
+    protected List<UserPreviewDTO> mapCollaboratorToUserPreviewDTO(List<PlaylistCollaborator> collaborators){
         return collaborators.stream()
                 .map(m -> memberMapper.toPreviewDTO(m.getCollaborator()))
                 .toList();

@@ -1,6 +1,6 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.dto.AlbumDTO;
+import com.example.backend.dto.album.AlbumPreviewDTO;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.entity.Album;
 import com.example.backend.mapper.AlbumMapper;
@@ -21,8 +21,8 @@ public class AlbumServiceImp implements AlbumService {
     private final PageMapper pageMapper;
 
     @Override
-    public PageResponse<AlbumDTO> getAlbumsByArtistId(Long artistId) {
+    public PageResponse<AlbumPreviewDTO> getAlbumsByArtistId(Long artistId) {
         Page<Album> albums = albumRepo.findByArtistId(artistId, Pageable.ofSize(4));
-        return pageMapper.toPageResponse(albums, albumMapper::toAlbumDTO);
+        return pageMapper.toPageResponse(albums, albumMapper::toAlbumPreviewDTO);
     }
 }

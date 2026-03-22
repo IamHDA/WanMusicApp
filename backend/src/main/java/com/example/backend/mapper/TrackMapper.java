@@ -3,7 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.TagDTO;
 import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.dto.track.TrackPreviewDTO;
-import com.example.backend.dto.user.MemberPreviewDTO;
+import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
 import com.example.backend.dto.user.TrackContributorDTO;
 import com.example.backend.entity.ArtistContribution;
@@ -29,7 +29,7 @@ public abstract class TrackMapper {
 
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
     @Mapping(source = "contributions", target = "contributors", qualifiedByName = "mapTrackContributionsToNamePreview")
-    public abstract TrackPreviewDTO toTrackDTO(Track track);
+    public abstract TrackPreviewDTO toTrackPreviewDTO(Track track);
 
     @Mapping(source = "fileKey", target = "trackUrl", qualifiedByName = "mapTrackKeyToUrl")
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
@@ -67,7 +67,7 @@ public abstract class TrackMapper {
     }
 
     @Named("mapContributionToProfilePreview")
-    protected List<MemberPreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
+    protected List<UserPreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
         return contributions.stream()
                 .map(artistContribution -> artistProfileMapper.toPreviewDTO(artistContribution.getContributor()))
                 .toList();

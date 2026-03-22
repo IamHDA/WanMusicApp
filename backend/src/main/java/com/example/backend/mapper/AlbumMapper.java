@@ -1,6 +1,6 @@
 package com.example.backend.mapper;
 
-import com.example.backend.dto.AlbumDTO;
+import com.example.backend.dto.album.AlbumPreviewDTO;
 import com.example.backend.entity.Album;
 import com.example.backend.service.S3StorageService;
 import org.mapstruct.Mapper;
@@ -19,9 +19,9 @@ public abstract class AlbumMapper {
 
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "albumThumbnailKeyToUrl")
     @Mapping(source = "realeaseDate", target = "releaseYear", qualifiedByName = "albumDateToYear")
-    public abstract AlbumDTO toAlbumDTO(Album album);
+    public abstract AlbumPreviewDTO toAlbumPreviewDTO(Album album);
 
-    public abstract List<AlbumDTO> toAlbumDTOList(List<Album> albumList);
+    public abstract List<AlbumPreviewDTO> toAlbumDTOList(List<Album> albumList);
 
     @Named("albumThumbnailKeyToUrl")
     protected String albumThumbnailKeyToUrl(String key){
