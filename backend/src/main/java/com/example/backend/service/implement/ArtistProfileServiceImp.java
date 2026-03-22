@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.user.ArtistProfileDTO;
+import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.ArtistProfile;
 import com.example.backend.mapper.ArtistProfileMapper;
@@ -11,6 +12,8 @@ import com.example.backend.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
@@ -27,6 +30,37 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         ArtistProfileDTO dto = artistProfileMapper.toArtistProfileDTO(profile);
         dto.setAlbums(albumService.getAlbumsByArtistId(artistId));
         return dto;
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String createArtistProfileRequest(CreateArtistProfileRequestDTO dto) {
+        ArtistProfile profile = new ArtistProfile();
+
+        profile.setStageName(dto.stageName());
+        profile.setBio(dto.bio());
+        profile.setAvatarKey(dto.avatarKey());
+        profile.setCoverKey(dto.coverKey());
+        profile.setVerified(false);
+        profile.setCreatedAt(LocalDateTime.now());
+
+        return "Send request successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String approveArtistProfileRequest(Long artistProfileId) {
+        ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+        profile.setVerified(true);
+        return "Approved artist profile request successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String rejectArtistProfileRequest(Long artistProfileId) {
+        ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+        profile.setVerified(false);
+        return "Rejected artist profile request successfully!";
     }
 
     @Override

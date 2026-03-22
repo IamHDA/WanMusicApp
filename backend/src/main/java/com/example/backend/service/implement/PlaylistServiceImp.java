@@ -2,9 +2,12 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.playlist.PlaylistDTO;
 import com.example.backend.dto.playlist.PlaylistPreviewDTO;
+import com.example.backend.dto.playlist.UpdatePlaylistDetailDTO;
 import com.example.backend.entity.Playlist;
+import com.example.backend.entity.PlaylistCollaborator;
 import com.example.backend.mapper.PlaylistMapper;
 import com.example.backend.repository.MemberRepository;
+import com.example.backend.repository.PlaylistCollaboratorRepository;
 import com.example.backend.repository.PlaylistRepository;
 import com.example.backend.repository.UserRepository;
 import com.example.backend.service.AuthenticationService;
@@ -15,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +28,7 @@ public class PlaylistServiceImp implements PlaylistService {
     private final MemberRepository memberRepo;
     private final PlaylistMapper playlistMapper;
     private final PlaylistRepository playlistRepo;
+    private final PlaylistCollaboratorRepository playlistCollaboratorRepo;
 
 
     @Override
@@ -55,6 +60,22 @@ public class PlaylistServiceImp implements PlaylistService {
         playlistRepo.save(playlist);
 
         return playlist.getId();
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String updatePlaylistDetail(UpdatePlaylistDetailDTO dto) {
+        Optional<PlaylistCollaborator> playlistCollab = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(
+                dto.id(), authenticationService.getCurrentMemberId());
+        if(playlistCollab.isEmpty())
+            throw new RuntimeException("You are not a collaborator of this playlist!");
+        Playlist playlist = playlistRepo.findById(dto.id()).orElseThrow(()-> new RuntimeException("Playlist not found!"));
+
+        playlist.setTitle(dto.name());
+        playlist.setDescription(dto.description());
+        playlist.setThumbnailKey(dto.thumbnailKey());
+
+        return "Playlist detail updated successfully!";
     }
 
     @Override

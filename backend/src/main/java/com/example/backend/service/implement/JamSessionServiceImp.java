@@ -29,5 +29,8 @@ public class JamSessionServiceImp implements JamSessionService {
         jamSession.setSize(dto.getSize());
         jamSession.setPublic(dto.isPrivate());
         jamSessionRepo.save(jamSession);
+
+
+        return "Created jam session successfully!";
     }
 }

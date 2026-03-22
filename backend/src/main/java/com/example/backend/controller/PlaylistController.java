@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.playlist.PlaylistDTO;
 import com.example.backend.dto.playlist.PlaylistPreviewDTO;
+import com.example.backend.dto.playlist.UpdatePlaylistDetailDTO;
 import com.example.backend.service.PlaylistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -30,6 +31,11 @@ public class PlaylistController {
     @PostMapping("/create")
     public ResponseEntity<Long> createPlaylist(@RequestBody Map<String, String> params){
         return ResponseEntity.ok(playlistService.createPlaylist(params.get("name")));
+    }
+
+    @PutMapping("/updateDetail")
+    public ResponseEntity<String> updatePlaylistDetail(@RequestBody UpdatePlaylistDetailDTO dto){
+        return ResponseEntity.ok(playlistService.updatePlaylistDetail(dto));
     }
 
     @DeleteMapping("/delete/{id}")

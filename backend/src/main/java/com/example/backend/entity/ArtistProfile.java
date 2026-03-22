@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -29,6 +31,8 @@ public class ArtistProfile {
     private String avatarKey;
     @Column(name = "cover_key", length = 150, nullable = false)
     private String coverKey;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @OneToOne(
             fetch = FetchType.LAZY,

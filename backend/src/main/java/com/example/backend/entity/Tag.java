@@ -20,10 +20,12 @@ public class Tag {
     private Long id;
     @Column(length = 50, nullable = false)
     private String name;
+    @Column(name = "description", nullable = false)
+    private String description;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "taxonomy_id")
-    private Taxonomy taxonomy;
+    @JoinColumn(name = "parent_tag_id")
+    private Tag parentTags;
 
     @OneToMany(
             mappedBy = "tag",

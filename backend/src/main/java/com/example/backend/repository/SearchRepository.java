@@ -203,6 +203,7 @@ public class SearchRepository {
                 "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) AND m.id <> :currentUserId";
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
         return query.getSingleResult();
     }
 }
