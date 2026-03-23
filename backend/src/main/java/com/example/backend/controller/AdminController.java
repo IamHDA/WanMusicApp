@@ -1,15 +1,19 @@
 package com.example.backend.controller;
 
 import com.example.backend.Enum.TrackStatus;
+import com.example.backend.dto.CreateTagRequestDTO;
 import com.example.backend.dto.PageResponse;
+import com.example.backend.dto.TagDTO;
 import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.service.ArtistProfileService;
+import com.example.backend.service.TagService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.Map;
 
 @RestController

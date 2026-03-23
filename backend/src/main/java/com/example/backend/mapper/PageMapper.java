@@ -24,4 +24,14 @@ public interface PageMapper {
                 page.getTotalPages()
         );
     }
+
+    default <E> PageResponse<E> toPageResponse(Page<E> page) {
+        return new PageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages()
+        );
+    }
 }

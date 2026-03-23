@@ -1,7 +1,9 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.SearchRequestDTO;
 import com.example.backend.dto.SearchResponseDTO;
+import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.service.SearchService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -25,6 +27,11 @@ public class SearchController {
                 .pageNumber(pageNumber)
                 .pageSize(pageSize)
                 .build()));
+    }
+
+    @GetMapping("/friends")
+    public ResponseEntity<PageResponse<UserPreviewDTO>> searchFriends(@RequestParam String query, @RequestParam int pageNumber){
+        return ResponseEntity.ok(searchService.searchFriends(query, pageNumber));
     }
 
 }

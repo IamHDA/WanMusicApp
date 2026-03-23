@@ -19,4 +19,6 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     void logoutAllTokensByEmail(@Param("email") String email);
 
     Optional<Token> findByAccessToken(String accessToken);
+
+    Optional<Token> findByRefreshToken(String refreshToken);
 }

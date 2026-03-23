@@ -8,11 +8,16 @@ import com.example.backend.dto.track.TrackPreviewDTO;
 import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.AlbumMapper;
+import com.example.backend.mapper.ArtistProfileMapper;
+import com.example.backend.mapper.MemberMapper;
 import com.example.backend.mapper.TrackMapper;
 import com.example.backend.service.AuthenticationService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 import java.util.ArrayList;
@@ -26,6 +31,8 @@ public class SearchRepository {
     private final EntityManager entityManager;
     private final AuthenticationService authenticationService;
     private final TrackMapper trackMapper;
+    private final ArtistProfileMapper artistProfileMapper;
+    private final MemberMapper memberMapper;
     private final AlbumMapper albumMapper;
 
     public SearchResponseDTO search(SearchRequestDTO searchRequestDTO) {
@@ -116,7 +123,10 @@ public class SearchRepository {
                 .map(result -> {
                     ArtistProfile a = (ArtistProfile) result[0];
                     boolean isFollowed = (boolean) result[1];
-                    return new UserPreviewDTO(a.getId(), a.getAvatarKey(), a.getStageName(), isFollowed, false);
+                    UserPreviewDTO userPreviewDTO = artistProfileMapper.toPreviewDTO(a);
+                    userPreviewDTO.setFollowed(isFollowed);
+                    userPreviewDTO.setFriend(false);
+                    return userPreviewDTO;
                 })
                 .collect(Collectors.toList());
     }
@@ -193,7 +203,10 @@ public class SearchRepository {
                 .map(result -> {
                     Member a = (Member) result[0];
                     boolean isFriend = (boolean) result[1];
-                    return new UserPreviewDTO(a.getId(), a.getAvatarKey(), a.getFullName(), false, isFriend);
+                    UserPreviewDTO userPreviewDTO = memberMapper.toPreviewDTO(a);
+                    userPreviewDTO.setFollowed(false);
+                    userPreviewDTO.setFriend(isFriend);
+                    return userPreviewDTO;
                 })
                 .collect(Collectors.toList());
     }
@@ -205,5 +218,34 @@ public class SearchRepository {
         query.setParameter("keyword", "%" + keyword + "%");
         query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
         return query.getSingleResult();
+    }
+
+    public Page<UserPreviewDTO> searchFriends(String query, int pageNumber) {
+        String jpql1 = "SELECT CASE WHEN fr.member.id = :currentUserId THEN fr.friend ELSE fr.member END " +
+                "FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
+                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+
+        TypedQuery<Member> fetch = entityManager.createQuery(jpql1, Member.class);
+        fetch.setParameter("query", "%" + query + "%");
+        fetch.setParameter("currentUserId", authenticationService.getCurrentMemberId());
+        fetch.setFirstResult((pageNumber - 1) * 5);
+        fetch.setMaxResults(5);
+
+        List<UserPreviewDTO> content = fetch.getResultList().stream()
+                .map(member -> {
+                    UserPreviewDTO userPreviewDTO = memberMapper.toPreviewDTO(member);
+                    userPreviewDTO.setFollowed(false);
+                    userPreviewDTO.setFriend(true);
+                    return userPreviewDTO;
+                })
+                .toList();
+
+        String jpql2 = "SELECT COUNT(fr) FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
+                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+
+        TypedQuery<Long> count = entityManager.createQuery(jpql2, Long.class);
+        Long totalItems = count.getSingleResult();
+
+        return new PageImpl<>(content, PageRequest.of(pageNumber, 5), totalItems);
     }
 }

@@ -98,6 +98,25 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     @Override
+    public AuthenticationResponse refreshToken(String refreshToken) {
+        UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(refreshToken));
+
+        Optional<Token> token = tokenRepo.findByRefreshToken(refreshToken);
+
+        if(token.isPresent()){
+            if(jwtTokenProvider.validateRefreshToken(refreshToken, userDetails)){
+                String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+                String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+
+                saveToken(userDetails.getUsername(), accessToken, newRefreshToken);
+
+                return new AuthenticationResponse(null, accessToken, newRefreshToken, "Token refreshed successfully!");
+            }
+        }
+        return new AuthenticationResponse(null, null, null, "Token expired!");
+    }
+
+    @Override
     public Long getCurrentMemberId(){
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();

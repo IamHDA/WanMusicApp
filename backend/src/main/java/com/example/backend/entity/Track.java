@@ -84,14 +84,6 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<RankingStat> rankingStats;
-
-    @OneToMany(
-            mappedBy = "track",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
     private List<PlayerState> playerStates;
 
     @OneToMany(

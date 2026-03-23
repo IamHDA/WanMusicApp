@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.ArtistProfileStatus;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
@@ -41,7 +42,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         profile.setBio(dto.bio());
         profile.setAvatarKey(dto.avatarKey());
         profile.setCoverKey(dto.coverKey());
-        profile.setVerified(false);
+        profile.setStatus(ArtistProfileStatus.PENDING);
         profile.setCreatedAt(LocalDateTime.now());
 
         return "Send request successfully!";
@@ -51,7 +52,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     @Transactional(rollbackFor = Exception.class)
     public String approveArtistProfileRequest(Long artistProfileId) {
         ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
-        profile.setVerified(true);
+        profile.setStatus(ArtistProfileStatus.VERIFIED);
         return "Approved artist profile request successfully!";
     }
 
@@ -59,7 +60,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     @Transactional(rollbackFor = Exception.class)
     public String rejectArtistProfileRequest(Long artistProfileId) {
         ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
-        profile.setVerified(false);
+        profile.setStatus(ArtistProfileStatus.REJECTED);
         return "Rejected artist profile request successfully!";
     }
 

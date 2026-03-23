@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.Enum.ArtistProfileStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -25,12 +26,13 @@ public class ArtistProfile {
     private String stageName;
     @Column(length = 500)
     private String bio;
-    @Column(name = "is_verified", nullable = false)
-    private boolean isVerified;
     @Column(name = "avatar_key", length = 150, nullable = false)
     private String avatarKey;
     @Column(name = "cover_key", length = 150, nullable = false)
     private String coverKey;
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private ArtistProfileStatus status;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
