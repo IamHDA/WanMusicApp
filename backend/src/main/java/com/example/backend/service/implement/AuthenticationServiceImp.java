@@ -98,6 +98,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AuthenticationResponse refreshToken(String refreshToken) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(refreshToken));
 
