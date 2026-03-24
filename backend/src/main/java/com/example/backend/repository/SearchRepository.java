@@ -1,5 +1,6 @@
 package com.example.backend.repository;
 
+import com.example.backend.Enum.FriendStatus;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.SearchRequestDTO;
 import com.example.backend.dto.SearchResponseDTO;
@@ -125,7 +126,7 @@ public class SearchRepository {
                     boolean isFollowed = (boolean) result[1];
                     UserPreviewDTO userPreviewDTO = artistProfileMapper.toPreviewDTO(a);
                     userPreviewDTO.setFollowed(isFollowed);
-                    userPreviewDTO.setFriend(false);
+                    userPreviewDTO.setFriendStatus("NONE");
                     return userPreviewDTO;
                 })
                 .collect(Collectors.toList());
@@ -186,26 +187,37 @@ public class SearchRepository {
     }
 
     private List<UserPreviewDTO> searchMembers(String keyword, int pageSize, int offset) {
-        String jpql = "SELECT m, " +
-                "CASE WHEN COUNT(f.id) > 0 THEN true ELSE false END " +
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        String jpql = "SELECT m, f " +
                 " FROM Member m " +
-                "LEFT JOIN FETCH Friendship f ON f.friend.id = :currentUserId " +
-                "OR f.member.id = :currentUserId " +
-                "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) AND m.id <> :currentUserId " +
-                "GROUP BY m";
+                "LEFT JOIN Friendship f ON " +
+                "  (f.member.id = :currentUserId AND f.friend.id = m.id) " +
+                "OR (f.friend.id = :currentUserId AND f.member.id = m.id) " +
+                "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) AND m.id <> :currentUserId ";
+
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
         query.setParameter("keyword", "%" + keyword + "%");
-        query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
+        query.setParameter("currentUserId", currentUserId);
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
 
         return query.getResultList().stream()
                 .map(result -> {
                     Member a = (Member) result[0];
-                    boolean isFriend = (boolean) result[1];
+                    Friendship f = (Friendship) result[1];
                     UserPreviewDTO userPreviewDTO = memberMapper.toPreviewDTO(a);
                     userPreviewDTO.setFollowed(false);
-                    userPreviewDTO.setFriend(isFriend);
+                    if (f == null){
+                        userPreviewDTO.setFriendStatus("NONE");
+                    }else if(f.getStatus() == FriendStatus.ACCEPTED){
+                        userPreviewDTO.setFriendStatus("ACCEPTED");
+                    }else if(f.getStatus() == FriendStatus.PENDING){
+                        if(f.getMember().getId().equals(currentUserId)){
+                            userPreviewDTO.setFriendStatus("PENDING_SENT");
+                        }else userPreviewDTO.setFriendStatus("PENDING_RECEIVED");
+                    }else{
+                        userPreviewDTO.setFriendStatus("NONE");
+                    }
                     return userPreviewDTO;
                 })
                 .collect(Collectors.toList());
@@ -221,13 +233,16 @@ public class SearchRepository {
     }
 
     public Page<UserPreviewDTO> searchFriends(String query, int pageNumber) {
+        Long currentUserId = authenticationService.getCurrentMemberId();
         String jpql1 = "SELECT CASE WHEN fr.member.id = :currentUserId THEN fr.friend ELSE fr.member END " +
-                "FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
-                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+                "FROM Friendship fr " +
+                "WHERE fr.status = 'ACCEPTED' " +
+                "AND (fr.member.id = :currentUserId OR fr.friend.id = :currentUserId)" +
+                "AND (LOWER(fr.friend.fullName) LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query))";
 
         TypedQuery<Member> fetch = entityManager.createQuery(jpql1, Member.class);
         fetch.setParameter("query", "%" + query + "%");
-        fetch.setParameter("currentUserId", authenticationService.getCurrentMemberId());
+        fetch.setParameter("currentUserId", currentUserId);
         fetch.setFirstResult((pageNumber - 1) * 5);
         fetch.setMaxResults(5);
 
@@ -235,17 +250,21 @@ public class SearchRepository {
                 .map(member -> {
                     UserPreviewDTO userPreviewDTO = memberMapper.toPreviewDTO(member);
                     userPreviewDTO.setFollowed(false);
-                    userPreviewDTO.setFriend(true);
+                    userPreviewDTO.setFriendStatus("ACCEPTED"); // Chắc chắn đang là Friend
                     return userPreviewDTO;
                 })
                 .toList();
 
-        String jpql2 = "SELECT COUNT(fr) FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
-                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+        String jpql2 = "SELECT COUNT(fr) FROM Friendship fr " +
+                "WHERE fr.status = 'ACCEPTED' " +
+                "AND (fr.member.id = :currentUserId OR fr.friend.id = :currentUserId)" +
+                "AND (LOWER(fr.friend.fullName) LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query))";
 
         TypedQuery<Long> count = entityManager.createQuery(jpql2, Long.class);
+        count.setParameter("query", "%" + query + "%");
+        count.setParameter("currentUserId", currentUserId);
         Long totalItems = count.getSingleResult();
 
-        return new PageImpl<>(content, PageRequest.of(pageNumber, 5), totalItems);
+        return new PageImpl<>(content, PageRequest.of(pageNumber -1, 5), totalItems);
     }
 }

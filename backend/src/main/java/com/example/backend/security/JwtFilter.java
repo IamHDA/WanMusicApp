@@ -57,4 +57,10 @@ public class JwtFilter extends OncePerRequestFilter {
         }
         filterChain.doFilter(request, response);
     }
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) {
+        String path = request.getServletPath();
+        // Bỏ qua filter với các endpoint auth (login, register, refresh)
+        return path.startsWith("/api/v1/auth/");
+    }
 }

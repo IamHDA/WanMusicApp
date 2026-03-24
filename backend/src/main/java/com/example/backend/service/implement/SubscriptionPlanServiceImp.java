@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.CreateSubscriptionPlanRequestDTO;
+import com.example.backend.dto.SubscriptionPlanDTO;
 import com.example.backend.dto.UpdateSubscriptionPlanDTO;
 import com.example.backend.entity.SubscriptionPlan;
 import com.example.backend.repository.SubscriptionPlanRepository;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -51,5 +53,17 @@ public class SubscriptionPlanServiceImp implements SubscriptionPlanService {
     public String deleteSubscriptionPlan(Long subscriptionPlanId) {
         subscriptionPlanRepo.deleteById(subscriptionPlanId);
         return "Subscription plan deleted successfully!";
+    }
+
+    @Override
+    public List<SubscriptionPlanDTO> getAllPlans() {
+        return subscriptionPlanRepo.findAll().stream()
+                .map(plan -> {
+                    SubscriptionPlanDTO dto = new SubscriptionPlanDTO();
+                    dto.setId(plan.getId());
+                    dto.setName(plan.getName());
+                    dto.setPrice(plan.getPrice());
+                    return dto;
+                }).toList();
     }
 }
