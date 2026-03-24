@@ -1,0 +1,26 @@
+package com.example.backend.controller;
+
+import com.example.backend.dto.user.MemberProfileDTO;
+import com.example.backend.dto.user.MemberUpdateProfileDTO;
+import com.example.backend.service.MemberService;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/api/v1/member")
+@RequiredArgsConstructor
+public class MemberController {
+
+    private final MemberService memberService;
+
+    @GetMapping("/getProfile/{id}")
+    public ResponseEntity<MemberProfileDTO> getProfile(@PathVariable Long id){
+        return ResponseEntity.ok(memberService.getProfile(id));
+    }
+
+    @PostMapping("/updateProfile")
+    public ResponseEntity<String> updateProfile(@RequestBody MemberUpdateProfileDTO dto){
+        return ResponseEntity.ok(memberService.updateProfile(dto));
+    }
+}

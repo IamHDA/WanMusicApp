@@ -15,6 +15,7 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
@@ -36,21 +37,21 @@ public class JwtFilter extends OncePerRequestFilter {
                 if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
                     UserDetails userDetails = userDetailsService.loadUserByUsername(email);
                     if(jwtTokenProvider.validateAccessToken(accessToken, userDetails)){
-                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(email, null, userDetails.getAuthorities());
+                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(token);
                     }
                 }
             }
         }catch(Exception e){
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
             if(e instanceof ExpiredJwtException){
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("AccessToken expired!");
-            }else if(e instanceof SignatureException){
-                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-                response.setContentType("application/json");
-                response.getWriter().write("AccessToken unauthorized!");
+                response.getWriter().write("{\"error\": \"AccessToken expired!\"}");
+            } else if(e instanceof SignatureException){
+                response.getWriter().write("{\"error\": \"AccessToken signature invalid!\"}");
+            } else {
+                response.getWriter().write("{\"error\": \"Token invalid or malformed!\"}");
             }
             return;
         }

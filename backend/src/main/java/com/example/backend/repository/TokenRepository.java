@@ -17,4 +17,8 @@ public interface TokenRepository extends JpaRepository<Token, Long> {
     @Modifying
     @Query("update Token t set t.loggedOut = true where t.user.email = :email and t.loggedOut = false")
     void logoutAllTokensByEmail(@Param("email") String email);
+
+    Optional<Token> findByAccessToken(String accessToken);
+
+    Optional<Token> findByRefreshToken(String refreshToken);
 }

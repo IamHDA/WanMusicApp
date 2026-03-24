@@ -26,14 +26,9 @@ public class User {
     private String email;
     @Column(length = 60, nullable = false)
     private String password;
-    @Column(name = "display_name", length = 20, nullable = false)
-    private String displayName;
+    @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role;
-    @Column(nullable = false)
-    private SubscriptionType subscriptionType;
-    @Column(nullable = false)
-    private UserStatus status;
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;
 

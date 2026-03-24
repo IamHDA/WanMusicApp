@@ -7,4 +7,6 @@ import com.example.backend.dto.authentication.AuthenticationResponse;
 public interface AuthenticationService {
     AuthenticationResponse login(LogInRequest request);
     AuthenticationResponse register(RegisterRequest request);
+    AuthenticationResponse refreshToken(String refreshToken);
+    Long getCurrentMemberId();
 }

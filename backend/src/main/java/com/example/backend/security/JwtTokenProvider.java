@@ -36,7 +36,7 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(UserDetails userDetails){
-        return generateKey(userDetails, 1000 * 60 * 60);
+        return generateKey(userDetails, 1000 * 6);
     }
 
     public String generateRefreshToken(UserDetails userDetails){

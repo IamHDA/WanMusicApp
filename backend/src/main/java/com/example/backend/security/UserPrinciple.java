@@ -18,6 +18,10 @@ public class UserPrinciple implements UserDetails {
         return Collections.singletonList(() -> "ROLE_" + user.getRole().toString());
     }
 
+    public Long getId() {
+        return user.getId();
+    }
+
     @Override
     public String getPassword() {
         return user.getPassword();
