@@ -1,4 +1,4 @@
 package com.example.backend.dto.subscription;
 
-public record SubscribeRequestDTO(Long plantId) {
+public record SubscribeRequestDTO(Long planId) {
 }

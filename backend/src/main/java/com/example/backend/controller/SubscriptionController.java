@@ -14,8 +14,8 @@ public class SubscriptionController {
     private final SubscriptionService subscriptionService;
 
     @PostMapping("/subscribe")
-    public ResponseEntity<String>  subscribe(@RequestBody SubscribeRequestDTO dto) {
-        return ResponseEntity.ok(subscriptionService.subscribe(dto.planId()));
+    public ResponseEntity<String> subscribe(@RequestBody SubscribeRequestDTO dto) {
+        return ResponseEntity.ok(subscriptionService.subscribe(dto.plantId()));
     }
 
     @GetMapping("/my")
