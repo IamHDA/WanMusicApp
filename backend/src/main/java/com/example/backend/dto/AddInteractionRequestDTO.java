@@ -1,13 +1,13 @@
 package com.example.backend.dto;
 
-import com.example.backend.Enum.InterationType;
+import com.example.backend.Enum.InteractionType;
 import lombok.Getter;
 
 @Getter
 public class AddInteractionRequestDTO {
 
-    private InterationType type;
+    private Long trackId;
+    private InteractionType type;
     private int duration;
-    private int trackId;
 
 }

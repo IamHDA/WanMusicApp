@@ -93,4 +93,12 @@ public class Track {
             orphanRemoval = true
     )
     private List<JamSession> jamSessions;
+
+    @OneToMany(
+            mappedBy = "track",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<TrackFavourite> favourites;
 }

@@ -188,12 +188,13 @@ public class SearchRepository {
     }
 
     private List<MemberProfilePreviewDTO> searchMembers(String keyword, int pageSize, int offset) {
-        String jpql = "SELECT m, f.status " +
+        String jpql = "SELECT m, " +
+                " (SELECT f.status FROM Friendship f " +
+                "  WHERE (f.member.id = m.id AND f.friend.id = :currentUserId) " +
+                "     OR (f.friend.id = m.id AND f.member.id = :currentUserId)) " +
                 " FROM Member m " +
-                "LEFT JOIN FETCH Friendship f ON f.friend.id = :currentUserId " +
-                "OR f.member.id = :currentUserId " +
-                "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) AND m.id <> :currentUserId " +
-                "GROUP BY m";
+                " WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
+                " AND m.id <> :currentUserId";
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
         query.setParameter("keyword", "%" + keyword + "%");
         query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
@@ -203,7 +204,7 @@ public class SearchRepository {
         return query.getResultList().stream()
                 .map(result -> {
                     Member a = (Member) result[0];
-                    FriendStatus status = FriendStatus.valueOf((String) result[1]);
+                    FriendStatus status = result[1] != null ? FriendStatus.valueOf((String) result[1]) : null;
                     MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(a);
                     memberProfilePreviewDTO.setFriendStatus(status);
                     return memberProfilePreviewDTO;

@@ -122,4 +122,12 @@ public class Member extends User{
             orphanRemoval = true
     )
     private List<Follower> artistsFollowed;
+
+    @OneToMany(
+            mappedBy = "member",
+            fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL,
+            orphanRemoval = true
+    )
+    private List<TrackFavourite> favourites;
 }

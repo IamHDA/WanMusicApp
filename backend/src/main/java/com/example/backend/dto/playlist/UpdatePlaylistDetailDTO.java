@@ -4,6 +4,7 @@ public record UpdatePlaylistDetailDTO(
         Long id,
         String name,
         String description,
-        String thumbnailKey
+        String thumbnailKey,
+        boolean isPublic
 ) {
 }

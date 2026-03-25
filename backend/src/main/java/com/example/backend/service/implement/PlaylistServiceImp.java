@@ -72,6 +72,7 @@ public class PlaylistServiceImp implements PlaylistService {
         playlist.setTitle(dto.name());
         playlist.setDescription(dto.description());
         playlist.setThumbnailKey(dto.thumbnailKey());
+        playlist.setPublic(dto.isPublic());
 
         return "Playlist detail updated successfully!";
     }

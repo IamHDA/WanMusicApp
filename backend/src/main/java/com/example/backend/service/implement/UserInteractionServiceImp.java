@@ -1,6 +1,6 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.Enum.InterationType;
+import com.example.backend.Enum.InteractionType;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Track;
 import com.example.backend.entity.UserInteraction;
@@ -20,7 +20,7 @@ public class UserInteractionServiceImp implements UserInteractionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addInteraction(Member member, Track track, InterationType type) {
+    public void addInteraction(Member member, Track track, InteractionType type) {
         UserInteraction interaction = new UserInteraction();
         interaction.setMember(member);
         interaction.setTrack(track);
