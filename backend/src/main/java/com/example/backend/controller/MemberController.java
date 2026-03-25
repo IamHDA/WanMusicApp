@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.user.AccountSettingsDTO;
 import com.example.backend.dto.user.MemberProfileDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.service.MemberService;
@@ -22,5 +23,10 @@ public class MemberController {
     @PostMapping("/updateProfile")
     public ResponseEntity<String> updateProfile(@RequestBody MemberUpdateProfileDTO dto){
         return ResponseEntity.ok(memberService.updateProfile(dto));
+    }
+
+    @GetMapping("/account-setting")
+    public ResponseEntity<AccountSettingsDTO> getAccountSettings() {
+        return ResponseEntity.ok(memberService.getAccountSettings());
     }
 }

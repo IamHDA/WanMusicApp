@@ -1,5 +1,6 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.dto.user.AccountSettingsDTO;
 import com.example.backend.dto.user.MemberProfileDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.Member;
@@ -38,11 +39,28 @@ public class MemberServiceImp implements MemberService {
         Member member = memberRepo.findById(memberId).orElseThrow(() -> new RuntimeException("Member not found!"));
 
         MemberProfileDTO memberProfileDTO = memberMapper.toProfileDTO(member);
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        String status = friendshipService.getFriendshipStatus(currentUserId, memberId);
+        memberProfileDTO.setFriendStatus(status);
 
         memberProfileDTO.setFollowedArtistCount(followerService.countFollowedArtistByUserId(memberId));
         memberProfileDTO.setFriendCount(friendshipService.countFriendByUserId(memberId));
         memberProfileDTO.setPlaylistCount(playlistService.countPlaylistsByOwnerId(memberId));
 
         return memberProfileDTO;
+    }
+
+    @Override
+    public AccountSettingsDTO getAccountSettings() {
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        Member member = memberRepo.findById(currentUserId).orElseThrow(() -> new RuntimeException("Member not found!"));
+
+        AccountSettingsDTO accountSettingsDTO = new AccountSettingsDTO();
+        accountSettingsDTO.setId(member.getId());
+        accountSettingsDTO.setDisplayName(member.getFullName());
+        accountSettingsDTO.setEmail(member.getEmail());
+        accountSettingsDTO.setAvatarUrl(member.getAvatarKey());
+        accountSettingsDTO.setSubscriptionType(member.getSubscriptionType().name());
+        return accountSettingsDTO;
     }
 }

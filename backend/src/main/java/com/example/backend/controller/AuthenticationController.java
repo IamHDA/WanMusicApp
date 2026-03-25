@@ -21,17 +21,15 @@ public class AuthenticationController {
         return ResponseEntity.ok(authenticationService.login(request));
     }
 
-    @PostMapping("/refresh")
+    @GetMapping("/refresh")
     public ResponseEntity<AuthenticationResponse> refreshToken(HttpServletRequest request){
-        String token = request.getHeader("Authorization");
-
-        if (token == null || !token.startsWith("Bearer ")) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             return ResponseEntity.badRequest().body(
                     new AuthenticationResponse(null, null, null, "Invalid Token")
             );
         }
-
-        String refreshToken = token.substring(7);
+        String refreshToken = authHeader.substring(7);
 
         return ResponseEntity.ok(authenticationService.refreshToken(refreshToken));
     }

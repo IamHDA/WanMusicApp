@@ -10,5 +10,5 @@ public class UserPreviewDTO{
     private String avatarUrl;
     private String name;
     private boolean isFollowed;
-    private boolean isFriend;
+    private String friendStatus;
 }

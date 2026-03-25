@@ -69,4 +69,26 @@ public class FriendshipServiceImp implements FriendshipService {
 
         return "Deleted friend successfully!";
     }
+
+    @Override
+    public String getFriendshipStatus(Long currentUserId, Long targetUserId) {
+        if (currentUserId.equals(targetUserId)) {
+            return "SELF";
+        }
+        Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentUserId, targetUserId);
+        if (friendship == null) {
+            return "NONE";
+        }
+        if (friendship.getStatus() == FriendStatus.ACCEPTED) {
+            return "ACCEPTED";
+        }
+        if (friendship.getStatus() == FriendStatus.PENDING) {
+            if(friendship.getMember().getId().equals(currentUserId)) {
+                return "PENDING_SENT";
+            }else{
+                return "PENDING_RECEIVED";
+            }
+        }
+        return "NONE";
+    }
 }
