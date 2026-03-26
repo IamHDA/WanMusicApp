@@ -10,6 +10,7 @@ public class MemberProfileDTO {
     private Long id;
     private String displayName;
     private String avatarUrl;
+    private boolean isArtist;
     private String friendStatus;
     private int followedArtistCount;
     private int friendCount;

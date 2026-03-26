@@ -3,12 +3,12 @@ spring:
     name: WanMusic
 
   datasource:
-    url: jdbc:mysql://localhost:3306/wanmusic?useSSL=false&serverTimezone=UTC
-    username: root
-    password: 3355
-#    url: jdbc:mysql://100.97.109.94:3306/wanmusic?useSSL=false&serverTimezone=UTC
-#    username: mobile
-#    password: Mobile123@
+#    url: jdbc:mysql://localhost:3306/wanmusic?useSSL=false&serverTimezone=UTC
+#    username: root
+#    password: 3355
+    url: jdbc:mysql://100.97.109.94:3306/wanmusic?useSSL=false&serverTimezone=UTC
+    username: mobile
+    password: Mobile123@
 
   jpa:
     hibernate:

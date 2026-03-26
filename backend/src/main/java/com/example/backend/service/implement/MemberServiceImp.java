@@ -5,6 +5,7 @@ import com.example.backend.dto.user.MemberProfileDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.mapper.MemberMapper;
+import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ public class MemberServiceImp implements MemberService {
 
     private final MemberMapper memberMapper;
     private final MemberRepository memberRepo;
+    private final ArtistProfileRepository artistProfileRepo;
     private final AuthenticationService authenticationService;
     private final FollowerService followerService;
     private final PlaylistService playlistService;
@@ -28,9 +30,14 @@ public class MemberServiceImp implements MemberService {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         Member currentMember = memberRepo.findById(currentUserId).orElseThrow(()-> new RuntimeException("Member not found!")) ;
-
-        currentMember.setAvatarKey(dto.avatarKey());
-        currentMember.setFullName(dto.displayName());
+        // 1. Chỉ đè Avatar nếu Frontend Gửi lên có ảnh mới (Khác NULL)
+        if (dto.avatarKey() != null && !dto.avatarKey().trim().isEmpty()) {
+            currentMember.setAvatarKey(dto.avatarKey());
+        }
+        // 2. Chỉ đổi Tên nếu Frontend Gửi Tên mới
+        if (dto.displayName() != null && !dto.displayName().trim().isEmpty()) {
+            currentMember.setFullName(dto.displayName());
+        }
         return "Profile updated successfully!";
     }
 
@@ -39,6 +46,9 @@ public class MemberServiceImp implements MemberService {
         Member member = memberRepo.findById(memberId).orElseThrow(() -> new RuntimeException("Member not found!"));
 
         MemberProfileDTO memberProfileDTO = memberMapper.toProfileDTO(member);
+        boolean isArtist = artistProfileRepo.findByMemberId(memberId).isPresent();
+        memberProfileDTO.setArtist(isArtist);
+
         Long currentUserId = authenticationService.getCurrentMemberId();
         String status = friendshipService.getFriendshipStatus(currentUserId, memberId);
         memberProfileDTO.setFriendStatus(status);

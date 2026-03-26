@@ -1,6 +1,7 @@
 package com.example.backend.security;
 
 import com.example.backend.config.handler.CustomLoggoutHandler;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -56,7 +57,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                "api/v1/auth/refresh",
+                                "/api/v1/auth/refresh",
                                 "/api/v1/auth/**",
                                 "/swagger-ui.html",
                                 "/swagger-ui/**",
@@ -66,8 +67,20 @@ public class SecurityConfig {
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )
+                .exceptionHandling(exception -> exception
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"error\": \"Unauthorized access. Please provide a valid token.\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"error\": \"Access denied. You do not have permission.\"}");
+                        })
+                )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .logout(customizer -> customizer.logoutUrl("api/auth/logout")
+                .logout(customizer -> customizer.logoutUrl("/api/auth/logout")
                         .addLogoutHandler(customLoggoutHandler)
                         .logoutSuccessHandler((request, response, authentication) -> SecurityContextHolder.clearContext()))
                 .build();
