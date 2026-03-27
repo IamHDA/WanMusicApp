@@ -28,21 +28,6 @@ public class S3StorageServiceImp implements S3StorageService {
     private final S3Client s3Client;
     private final S3Presigner s3Presigner;
 
-    private String checkFileExist(String fileKey, String bucketName){
-        try {
-            s3Client.headObject(
-                    HeadObjectRequest.builder()
-                            .bucket(bucketName)
-                            .key(fileKey)
-                            .build()
-            );
-        }catch (Exception e){
-            if(e.getMessage().contains("NoSuchKey")) return null;
-            else throw e;
-        }
-        return "exists";
-    }
-
     @Override
     public String uploadFile(MultipartFile file, String bucketName) throws IOException {
         String fileKey = file.getOriginalFilename().replaceAll("\\s+", "_");
@@ -82,7 +67,7 @@ public class S3StorageServiceImp implements S3StorageService {
 
     @Override
     public PresignedUploadResponseDTO getPutPresignedUrl(PresignedUploadRequestDTO request) {
-        String key = UUID.randomUUID() + "_" + request.fileName().replaceAll("\\s+", "").trim();
+        String key = UUID.randomUUID() + "_" + request.fileName().replaceAll("\\s+", "_").trim();
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
                 .bucket(request.bucketName())

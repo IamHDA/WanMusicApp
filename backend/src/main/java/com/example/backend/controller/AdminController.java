@@ -31,14 +31,14 @@ public class AdminController {
         return ResponseEntity.ok(trackService.getTracksByStatus(TrackStatus.PENDING, index - 1, size));
     }
 
-    @PutMapping("/approveArtistProfile")
-    public ResponseEntity<String> approveArtistProfileRequest(@RequestBody Map<String, Long> param){
-        return ResponseEntity.ok(adminService.approveArtistProfileRequest(param.get("artistProfileId")));
+    @PutMapping("/approveArtistProfile/{id}")
+    public ResponseEntity<String> approveArtistProfileRequest(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.approveArtistProfileRequest(id));
     }
 
-    @PutMapping("/rejectArtistProfile")
-    public ResponseEntity<String> rejectArtistProfileRequest(@RequestBody Map<String, Long> param){
-        return ResponseEntity.ok(adminService.rejectArtistProfileRequest(param.get("artistProfileId")));
+    @PutMapping("/rejectArtistProfile/{id}")
+    public ResponseEntity<String> rejectArtistProfileRequest(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.rejectArtistProfileRequest(id));
     }
 
     @PutMapping("/approveTrack/{id}")
