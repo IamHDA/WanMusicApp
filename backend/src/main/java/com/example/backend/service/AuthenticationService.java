@@ -9,4 +9,5 @@ public interface AuthenticationService {
     AuthenticationResponse register(RegisterRequest request);
     AuthenticationResponse refreshToken(String refreshToken);
     Long getCurrentMemberId();
+    String getCurrentMemberName();
 }

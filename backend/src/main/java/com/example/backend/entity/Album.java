@@ -1,5 +1,6 @@
 package com.example.backend.entity;
 
+import com.example.backend.Enum.AlbumStatus;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -24,9 +25,11 @@ public class Album {
     private String title;
     @Column(name = "thumbnail_key", length = 50, nullable = false)
     private String thumbnailKey;
+    @Enumerated(EnumType.STRING)
+    private AlbumStatus status;
     @Column(name = "realease_date", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")
-    private LocalDate realeaseDate;
+    private LocalDate releaseDate;
 
     @ManyToOne(
             fetch = FetchType.LAZY,

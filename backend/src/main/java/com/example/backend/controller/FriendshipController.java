@@ -14,12 +14,17 @@ public class FriendshipController {
 
     @PostMapping("/addFriend/{id}")
     public ResponseEntity<String> addFriend(@PathVariable Long id){
-        return ResponseEntity.ok(friendshipService.addFriend(id));
+        return ResponseEntity.ok(friendshipService.sendFriendRequest(id));
     }
 
     @PutMapping("/acceptFriend/{friendId}")
-    public ResponseEntity<String> acceptFriend(@PathVariable Long friendId){
-        return ResponseEntity.ok(friendshipService.acceptFriend(friendId));
+    public ResponseEntity<String> acceptFriendRequestByFriendId(@PathVariable Long friendId){
+        return ResponseEntity.ok(friendshipService.acceptFriendRequest(friendId));
+    }
+
+    @PutMapping("/acceptFriend/{fiendshipId}")
+    public ResponseEntity<String> acceptFriendRequestByFiendshipId(@PathVariable Long fiendshipId){
+        return ResponseEntity.ok(friendshipService.acceptFriendRequest(fiendshipId));
     }
 
     @DeleteMapping("/deleteFriend/{id}")

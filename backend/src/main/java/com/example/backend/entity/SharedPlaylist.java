@@ -24,16 +24,17 @@ public class SharedPlaylist {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("playlistId")
-    @JoinColumn(name = "playlistId")
+    @JoinColumn(name = "playlist_Id")
     private Playlist playlist;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("memberId")
-    @JoinColumn(name = "memberId")
+    @JoinColumn(name = "member_Id")
     private Member sharedMember;
 
     public SharedPlaylist(Playlist playlist, Member member){
         this.playlist = playlist;
         this.sharedMember = member;
+        this.savedAt = LocalDate.now();
     }
 }

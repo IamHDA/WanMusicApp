@@ -5,6 +5,7 @@ import com.example.backend.dto.CreateTagRequestDTO;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.TagDTO;
 import com.example.backend.dto.track.TrackAdminReviewDTO;
+import com.example.backend.service.AdminService;
 import com.example.backend.service.ArtistProfileService;
 import com.example.backend.service.TagService;
 import com.example.backend.service.TrackService;
@@ -23,31 +24,41 @@ import java.util.Map;
 public class AdminController {
 
     private final TrackService trackService;
-    private final ArtistProfileService artistProfileService;
+    private final AdminService adminService;
 
     @GetMapping("/getAllPendingTrack")
     public ResponseEntity<PageResponse<TrackAdminReviewDTO>> getAllPendingTracks(@RequestParam(defaultValue = "1") int index, @RequestParam(defaultValue = "6") int size){
         return ResponseEntity.ok(trackService.getTracksByStatus(TrackStatus.PENDING, index - 1, size));
     }
 
-    @PutMapping("/approveArtistProfile")
-    public ResponseEntity<String> approveArtistProfileRequest(@RequestBody Map<String, Long> param){
-        return ResponseEntity.ok(artistProfileService.approveArtistProfileRequest(param.get("artistProfileId")));
+    @PutMapping("/approveArtistProfile/{id}")
+    public ResponseEntity<String> approveArtistProfileRequest(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.approveArtistProfileRequest(id));
     }
 
-    @PutMapping("/rejectArtistProfile")
-    public ResponseEntity<String> rejectArtistProfileRequest(@RequestBody Map<String, Long> param){
-        return ResponseEntity.ok(artistProfileService.rejectArtistProfileRequest(param.get("artistProfileId")));
+    @PutMapping("/rejectArtistProfile/{id}")
+    public ResponseEntity<String> rejectArtistProfileRequest(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.rejectArtistProfileRequest(id));
     }
 
     @PutMapping("/approveTrack/{id}")
     public ResponseEntity<String> approveTrack(@PathVariable Long id){
-        return ResponseEntity.ok(trackService.approveTrack(id));
+        return ResponseEntity.ok(adminService.approveTrackRequest(id));
     }
 
     @PutMapping("/rejectTrack/{id}")
     public ResponseEntity<String> rejectTrack(@PathVariable Long id){
-        return ResponseEntity.ok(trackService.rejectTrack(id));
+        return ResponseEntity.ok(adminService.rejectTrackRequest(id));
+    }
+
+    @PutMapping("/approveAlbum/{id}")
+    public ResponseEntity<String> approveAlbum(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.approveAlbumRequest(id));
+    }
+
+    @PutMapping("/rejectAlbum/{id}")
+    public ResponseEntity<String> rejectAlbum(@PathVariable Long id){
+        return ResponseEntity.ok(adminService.rejectAlbumRequest(id));
     }
 
 }

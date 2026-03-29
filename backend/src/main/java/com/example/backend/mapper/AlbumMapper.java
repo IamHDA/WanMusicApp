@@ -18,14 +18,14 @@ public abstract class AlbumMapper {
     private S3StorageService s3StorageService;
 
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "albumThumbnailKeyToUrl")
-    @Mapping(source = "realeaseDate", target = "releaseYear", qualifiedByName = "albumDateToYear")
+    @Mapping(source = "releaseDate", target = "releaseYear", qualifiedByName = "albumDateToYear")
     public abstract AlbumPreviewDTO toAlbumPreviewDTO(Album album);
 
     public abstract List<AlbumPreviewDTO> toAlbumDTOList(List<Album> albumList);
 
     @Named("albumThumbnailKeyToUrl")
     protected String albumThumbnailKeyToUrl(String key){
-        return s3StorageService.getGetPresignedUrl(key, "thumbnail");
+        return s3StorageService.getGetPresignedUrl(key, "thumbnails");
     }
 
     @Named("albumDateToYear")

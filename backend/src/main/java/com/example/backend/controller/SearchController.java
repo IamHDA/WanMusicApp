@@ -3,6 +3,7 @@ package com.example.backend.controller;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.SearchRequestDTO;
 import com.example.backend.dto.SearchResponseDTO;
+import com.example.backend.dto.user.MemberProfilePreviewDTO;
 import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.service.SearchService;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class SearchController {
     }
 
     @GetMapping("/friends")
-    public ResponseEntity<PageResponse<UserPreviewDTO>> searchFriends(@RequestParam String query, @RequestParam int pageNumber){
+    public ResponseEntity<PageResponse<MemberProfilePreviewDTO>> searchFriends(@RequestParam String query, @RequestParam int pageNumber){
         return ResponseEntity.ok(searchService.searchFriends(query, pageNumber));
     }
 

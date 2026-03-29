@@ -3,6 +3,7 @@ package com.example.backend.mapper;
 import com.example.backend.dto.TagDTO;
 import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.dto.track.TrackPreviewDTO;
+import com.example.backend.dto.user.ArtistProfilePreviewDTO;
 import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
 import com.example.backend.dto.user.TrackContributorDTO;
@@ -44,12 +45,12 @@ public abstract class TrackMapper {
 
     @Named("mapTrackKeyToUrl")
     protected String mapTrackKeyToUrl(String key){
-        return s3StorageService.getGetPresignedUrl(key, "track");
+        return s3StorageService.getGetPresignedUrl(key, "songs");
     }
 
     @Named("mapThumbnailKeyToUrl")
     protected String mapThumbnailKeyToUrl(String key){
-        return s3StorageService.getGetPresignedUrl(key, "thumbnail");
+        return s3StorageService.getGetPresignedUrl(key, "thumbnails");
     }
 
     @Named("mapTrackTagToTagDTO")
@@ -67,7 +68,7 @@ public abstract class TrackMapper {
     }
 
     @Named("mapContributionToProfilePreview")
-    protected List<UserPreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
+    protected List<ArtistProfilePreviewDTO> mapContributionToProfilePreview(List<ArtistContribution> contributions){
         return contributions.stream()
                 .map(artistContribution -> artistProfileMapper.toPreviewDTO(artistContribution.getContributor()))
                 .toList();

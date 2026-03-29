@@ -23,9 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class CustomLoggoutHandler implements LogoutHandler {
 
     private final MemberRepository memberRepo;
-    private final UserRepository userRepo;
     private final TokenRepository tokenRepo;
-
 
     @Override
     @Transactional

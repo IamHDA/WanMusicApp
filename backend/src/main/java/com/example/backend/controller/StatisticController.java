@@ -2,7 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.track.TrackPreviewDTO;
 import com.example.backend.dto.track.TrackStatisticDTO;
-import com.example.backend.service.StatisticsService;
+import com.example.backend.service.StatisticService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,16 +17,16 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StatisticController {
 
-    private final StatisticsService statisticsService;
+    private final StatisticService statisticService;
 
     @GetMapping("/getStatistic/{id}")
     public ResponseEntity<TrackStatisticDTO> getTrackStatistic(@PathVariable Long id){
-        return ResponseEntity.ok(statisticsService.getTrackStatistic(id));
+        return ResponseEntity.ok(statisticService.getTrackStatistic(id));
     }
 
     @GetMapping("/getTopTracks")
     public ResponseEntity<List<TrackPreviewDTO>> getTopTracks(){
-        return ResponseEntity.ok(statisticsService.getTopTracks());
+        return ResponseEntity.ok(statisticService.getTopTracks());
     }
 
 }

@@ -5,8 +5,10 @@ import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.entity.ArtistProfile;
+import com.example.backend.entity.Member;
 import com.example.backend.mapper.ArtistProfileMapper;
 import com.example.backend.repository.ArtistProfileRepository;
+import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.AlbumService;
 import com.example.backend.service.ArtistProfileService;
 import com.example.backend.service.AuthenticationService;
@@ -23,6 +25,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     private final ArtistProfileMapper artistProfileMapper;
     private final AlbumService albumService;
     private final ArtistProfileRepository artistProfileRepo;
+    private final MemberRepository memberRepo;
     private final AuthenticationService authenticationService;
 
     @Override
@@ -38,6 +41,9 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     public String createArtistProfileRequest(CreateArtistProfileRequestDTO dto) {
         ArtistProfile profile = new ArtistProfile();
 
+        Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
+
+        profile.setMember(member);
         profile.setStageName(dto.stageName());
         profile.setBio(dto.bio());
         profile.setAvatarKey(dto.avatarKey());
@@ -45,23 +51,9 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         profile.setStatus(ArtistProfileStatus.PENDING);
         profile.setCreatedAt(LocalDateTime.now());
 
+        artistProfileRepo.save(profile);
+
         return "Send request successfully!";
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String approveArtistProfileRequest(Long artistProfileId) {
-        ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
-        profile.setStatus(ArtistProfileStatus.VERIFIED);
-        return "Approved artist profile request successfully!";
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String rejectArtistProfileRequest(Long artistProfileId) {
-        ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
-        profile.setStatus(ArtistProfileStatus.REJECTED);
-        return "Rejected artist profile request successfully!";
     }
 
     @Override

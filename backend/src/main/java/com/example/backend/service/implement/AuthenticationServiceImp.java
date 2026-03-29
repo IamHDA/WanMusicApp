@@ -98,6 +98,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public AuthenticationResponse refreshToken(String refreshToken) {
         UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(refreshToken));
 
@@ -122,6 +123,14 @@ public class AuthenticationServiceImp implements AuthenticationService {
         UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
         return userPrinciple.getId();
     }
+
+    @Override
+    public String getCurrentMemberName() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
+        return userPrinciple.getUsername();
+    }
+
 
     private void saveToken(String email, String accessToken, String refreshToken){
         tokenRepo.logoutAllTokensByEmail(email);

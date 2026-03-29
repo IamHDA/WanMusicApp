@@ -1,6 +1,9 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.FriendStatus;
+import com.example.backend.Enum.NotificationType;
+import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.dto.NotificationDTO;
 import com.example.backend.entity.EmbeddedId.FriendshipId;
 import com.example.backend.entity.Friendship;
 import com.example.backend.entity.Member;
@@ -8,6 +11,7 @@ import com.example.backend.repository.FriendshipRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.AuthenticationService;
 import com.example.backend.service.FriendshipService;
+import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +25,7 @@ public class FriendshipServiceImp implements FriendshipService {
     private final MemberRepository memberRepo;
     private final AuthenticationService authenticationService;
     private final FriendshipRepository friendshipRepo;
+    private final NotificationService notificationService;
 
     @Override
     public int countFriendByUserId(Long userId) {
@@ -28,7 +33,7 @@ public class FriendshipServiceImp implements FriendshipService {
     }
 
     @Override
-    public String addFriend(Long friendId) {
+    public String sendFriendRequest(Long friendId) {
         Friendship friendship = new Friendship();
 
         Member currentMember = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
@@ -44,18 +49,34 @@ public class FriendshipServiceImp implements FriendshipService {
 
         friendshipRepo.save(friendship);
 
+        CreateNotificationDTO dto = new CreateNotificationDTO();
+        dto.setFriendRequestId(friendshipId);
+        dto.setSenderName(currentMember.getFullName());
+        dto.setTargetId(friendId);
+        dto.setNotificationType(NotificationType.FRIEND_REQUEST);
+
+        notificationService.sendNotification(dto);
+
         return "Sent friend request successfully!";
     }
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String acceptFriend(Long friendId) {
+    public String acceptFriendRequest(Long friendId) {
         Member currentMember = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
 
         Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentMember.getId(), friendId);
 
         friendship.setStatus(FriendStatus.ACCEPTED);
-        friendshipRepo.save(friendship);
+
+        return "Accepted friend request successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String acceptFriendRequest(FriendshipId friendshipId) {
+        Friendship friendship = friendshipRepo.findById(friendshipId).orElseThrow(()-> new RuntimeException("Friendship not found!"));
+        friendship.setStatus(FriendStatus.ACCEPTED);
 
         return "Accepted friend request successfully!";
     }

@@ -23,7 +23,6 @@ public class JamNotification {
     private Long id;
     @Column(length = 100, nullable = false)
     private String message;
-    private int duration;
     @Enumerated(EnumType.STRING)
     @Column(name = "notificationType", nullable = false)
     private NotificationType type;

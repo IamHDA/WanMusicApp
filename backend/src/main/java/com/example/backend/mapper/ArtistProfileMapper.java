@@ -1,6 +1,7 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.user.ArtistProfileDTO;
+import com.example.backend.dto.user.ArtistProfilePreviewDTO;
 import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.dto.user.TrackContributorDTO;
 import com.example.backend.entity.ArtistProfile;
@@ -21,7 +22,7 @@ public abstract class ArtistProfileMapper {
 
     @Mapping(source = "stageName", target = "name")
     @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
-    public abstract UserPreviewDTO toPreviewDTO(ArtistProfile artistProfile);
+    public abstract ArtistProfilePreviewDTO toPreviewDTO(ArtistProfile artistProfile);
 
     @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
     @Mapping(source = "coverKey", target = "coverUrl", qualifiedByName = "mapCoverKeyToUrl")
@@ -31,12 +32,12 @@ public abstract class ArtistProfileMapper {
     @Named("mapAvatarKeyToUrl")
     protected String mapAvatarKeyToUrl(String avatarKey){
         if(avatarKey == null) return null;
-        return s3StorageService.getGetPresignedUrl(avatarKey, "avatar");
+        return s3StorageService.getGetPresignedUrl(avatarKey, "avatars");
     }
 
     @Named("mapCoverKeyToUrl")
     protected String mapCoverKeyToUrl(String coverKey){
         if(coverKey == null) return null;
-        return s3StorageService.getGetPresignedUrl(coverKey, "cover");
+        return s3StorageService.getGetPresignedUrl(coverKey, "covers");
     }
 }

@@ -1,12 +1,11 @@
 package com.example.backend.entity;
 
-import com.example.backend.Enum.InterationType;
+import com.example.backend.Enum.InteractionType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
 
@@ -23,7 +22,7 @@ public class UserInteraction {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "interaction_type")
-    private InterationType type;
+    private InteractionType type;
     @Column(name = "listen_duration", nullable = false)
     private int duration;
     @Column(name = "interaction_time", nullable = false)

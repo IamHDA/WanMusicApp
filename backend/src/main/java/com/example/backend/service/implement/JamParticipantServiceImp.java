@@ -1,6 +1,11 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.NotificationType;
+import com.example.backend.dto.CreateJamInvitationRequestDTO;
+import com.example.backend.dto.CreateJamNotificationDTO;
+import com.example.backend.dto.CreateNotificationDTO;
 import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
+import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
 import com.example.backend.entity.EmbeddedId.JamParticipantId;
 import com.example.backend.entity.JamParticipant;
 import com.example.backend.entity.JamSession;
@@ -9,7 +14,9 @@ import com.example.backend.repository.JamParticipantRepository;
 import com.example.backend.repository.JamSessionRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.service.JamNotificationService;
 import com.example.backend.service.JamParticipantService;
+import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,8 +27,10 @@ public class JamParticipantServiceImp implements JamParticipantService {
 
     private final JamSessionRepository jamSessionRepo;
     private final JamParticipantRepository jamParticipantRepo;
+    private final JamNotificationService jamNotificationService;
     private final AuthenticationService authenticationService;
     private final MemberRepository memberRepo;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -33,8 +42,31 @@ public class JamParticipantServiceImp implements JamParticipantService {
         participant.setSession(jamSession);
 
         participant.setId(new JamParticipantId(request.jamSessionId(), member.getId()));
+
         jamParticipantRepo.save(participant);
 
+        CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
+        dto.setJamJd(request.jamSessionId());
+        dto.setNotificationType(NotificationType.JAM_JOIN);
+        dto.setUsername(member.getFullName());
+
+        jamNotificationService.sendJamNotification(dto);
+
         return "Joined jam session successfully!";
+    }
+
+    @Override
+    public String inviteMember(CreateJamInvitationRequestDTO request) {
+        for(Long memberId: request.memberIds()){
+            CreateNotificationDTO dto = new CreateNotificationDTO();
+            dto.setSenderName(authenticationService.getCurrentMemberName());
+            dto.setJamSessionId(request.jamSessionId());
+            dto.setTargetId(memberId);
+            dto.setNotificationType(NotificationType.JAM_INVITE);
+
+            notificationService.sendNotification(dto);
+        }
+
+        return "Members invited successfully!";
     }
 }

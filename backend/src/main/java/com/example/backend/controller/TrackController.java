@@ -2,10 +2,8 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.track.TrackCreateDraftDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
-import com.example.backend.dto.track.TrackStatisticDTO;
 import com.example.backend.dto.track.TrackSubmitDTO;
 import com.example.backend.service.S3StorageService;
-import com.example.backend.service.StatisticsService;
 import com.example.backend.service.TrackService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,7 +19,7 @@ public class TrackController {
 
     @GetMapping("/find")
     public ResponseEntity<String> getTrack(@RequestParam(name = "trackFile") String fileName){
-        return ResponseEntity.ok(s3StorageService.getGetPresignedUrl(fileName, "track"));
+        return ResponseEntity.ok(s3StorageService.getGetPresignedUrl(fileName, "songs"));
     }
 
     @PostMapping("/submitDraft")
