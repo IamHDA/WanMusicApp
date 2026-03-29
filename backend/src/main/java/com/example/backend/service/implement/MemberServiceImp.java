@@ -21,6 +21,7 @@ public class MemberServiceImp implements MemberService {
     private final FollowerService followerService;
     private final PlaylistService playlistService;
     private final FriendshipService friendshipService;
+    private final S3StorageService s3StorageService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -28,6 +29,8 @@ public class MemberServiceImp implements MemberService {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         Member currentMember = memberRepo.findById(currentUserId).orElseThrow(()-> new RuntimeException("Member not found!")) ;
+
+        s3StorageService.deleteFile(currentMember.getAvatarKey(), "avatars");
 
         currentMember.setAvatarKey(dto.avatarKey());
         currentMember.setFullName(dto.displayName());

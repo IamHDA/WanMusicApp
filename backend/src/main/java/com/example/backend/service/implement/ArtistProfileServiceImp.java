@@ -12,6 +12,7 @@ import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.AlbumService;
 import com.example.backend.service.ArtistProfileService;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.service.S3StorageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     private final ArtistProfileRepository artistProfileRepo;
     private final MemberRepository memberRepo;
     private final AuthenticationService authenticationService;
+    private final S3StorageService s3StorageService;
 
     @Override
     public ArtistProfileDTO getProfile(Long artistId) {
@@ -62,6 +64,8 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         ArtistProfile profile = artistProfileRepo.findByMemberId(currentUserId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+
+        s3StorageService.deleteFile(profile.getAvatarKey(), "avatars");
 
         profile.setAvatarKey(dto.avatarKey());
         profile.setStageName(dto.displayName());

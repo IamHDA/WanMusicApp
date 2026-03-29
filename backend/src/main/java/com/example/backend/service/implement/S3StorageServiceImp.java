@@ -41,14 +41,13 @@ public class S3StorageServiceImp implements S3StorageService {
     }
 
     @Override
-    public String deleteFile(String fileKey, String bucketName) {
+    public void deleteFile(String fileKey, String bucketName) {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileKey)
                 .build();
 
         s3Client.deleteObject(deleteObjectRequest);
-        return "File deleted successfully!";
     }
 
     @Override
