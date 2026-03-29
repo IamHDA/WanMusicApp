@@ -35,6 +35,8 @@ public class ArtistProfile {
     private ArtistProfileStatus status;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
+    @Column(name = "is_verified", nullable = false)
+    private boolean isVerified = false;
 
     @OneToOne(
             fetch = FetchType.LAZY,

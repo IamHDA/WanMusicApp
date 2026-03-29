@@ -3,12 +3,11 @@ package com.example.backend.controller;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
+import com.example.backend.dto.user.UpdateArtistProfileRequestDTO;
 import com.example.backend.service.ArtistProfileService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/artist")
@@ -28,7 +27,7 @@ public class ArtistProfileController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<String> updateProfile(@RequestBody MemberUpdateProfileDTO dto){
+    public ResponseEntity<String> updateProfile(@RequestBody UpdateArtistProfileRequestDTO dto){
         return ResponseEntity.ok(artistProfileService.updateProfile(dto));
     }
 

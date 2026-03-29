@@ -34,3 +34,5 @@ build/
 
 ### Personal docs - do not commit ###
 readme_personal.md
+docs/
+application-local.yml
