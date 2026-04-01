@@ -38,10 +38,10 @@ class MusicTaggerService:
 
     def predict_from_bytes(self, audio_bytes: bytes, top_k: int | None = None) -> Dict[str, object]:
         log_mel = self.preprocessor.to_log_mel(audio_bytes)
-        x = torch.from_numpy(log_mel).unsqueeze(0).unsqueeze(0).to(self.device)
-
-        logits_list = [loaded.model(x) for loaded in self.models]
-        probs = self._merge_probabilities(logits_list)[0].detach().cpu().numpy()
+        with torch.inference_mode():
+            x = torch.from_numpy(log_mel).unsqueeze(0).unsqueeze(0).to(self.device)
+            logits_list = [loaded.model(x) for loaded in self.models]
+            probs = self._merge_probabilities(logits_list)[0].detach().cpu().numpy()
         k = min(top_k or settings.top_k, len(self.labels))
         idx = np.argsort(probs)[::-1][:k]
 
