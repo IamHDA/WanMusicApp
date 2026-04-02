@@ -1,7 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.SubscriptionType;
-import com.example.backend.dto.subscription.UserSubscriptionDTO;
+import com.example.backend.dto.subscription.UserSubscriptionRequestDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Subscription;
 import com.example.backend.entity.SubscriptionPlan;
@@ -24,35 +24,31 @@ public class SubscriptionServiceImp implements SubscriptionService {
     private final SubscriptionPlanRepository planRepo;
     private final AuthenticationService authenticationService;
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String subscribe(Long planId) {
-        Long currentUserId = authenticationService.getCurrentMemberId();
-        Member member = memberRepo.findById(currentUserId).orElseThrow(() -> new RuntimeException("Member not found!"));
-        SubscriptionPlan plan = planRepo.findById(planId).orElseThrow(() -> new RuntimeException("Plan not found!"));
-
-        Subscription subscription = new Subscription();
-        subscription.setSubscriber(member);
-        subscription.setPlan(plan);
-        subscription.setStartDate(LocalDate.now());
-        subscription.setEndDate(LocalDate.now().plusMonths(1)); // Gói 1 tháng
-        subscription.setActive(true);
-        subscriptionRepo.save(subscription);
-
-        member.setSubscriptionType(SubscriptionType.PREMIUM);
-        memberRepo.save(member);
-        return "Subscribed to plan: " + plan.getName() + " successfully!";
-    }
 
     @Override
-    public UserSubscriptionDTO getUserCurrentSubscription() {
+    public UserSubscriptionRequestDTO getUserCurrentSubscription() {
         Long currentUserId = authenticationService.getCurrentMemberId();
+
         // Tìm subscription đang active của user
-        Subscription sub = subscriptionRepo.findActiveByMemberId(currentUserId).orElseThrow(() -> new RuntimeException("No active subscription found!"));
+        Subscription sub = subscriptionRepo.findActiveByMemberId(currentUserId).orElse(null);
 
-        UserSubscriptionDTO dto = new UserSubscriptionDTO();
+        UserSubscriptionRequestDTO dto = new UserSubscriptionRequestDTO();
+
+        if (sub == null) {
+            // Chưa có subscription => trả về FREE mặc định
+            dto.setId(null);
+            dto.setPlanName("Free");
+            dto.setSubscriptionType("FREE");
+            dto.setPrice(0);
+            dto.setStartDate(null);
+            dto.setEndDate(null);
+            dto.setActive(false);
+            return dto;
+        }
+
         dto.setId(sub.getId());
         dto.setPlanName(sub.getPlan().getName());
+        dto.setSubscriptionType("PREMIUM");
         dto.setPrice(sub.getPlan().getPrice());
         dto.setStartDate(sub.getStartDate());
         dto.setEndDate(sub.getEndDate());

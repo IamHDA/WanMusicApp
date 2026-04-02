@@ -70,7 +70,10 @@ public class MemberServiceImp implements MemberService {
         MyProfileDTO myProfileDTO = new MyProfileDTO();
         myProfileDTO.setId(member.getId());
         myProfileDTO.setDisplayName(member.getFullName());
-        myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(member.getAvatarKey(), "avatars"));
+        String avatarKey = member.getAvatarKey();
+        if (avatarKey != null && !avatarKey.isBlank()) {
+            myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(avatarKey, "avatars"));
+        }
 
         artistProfileRepo.findByMemberId(currentUserId).ifPresent(artistProfile -> {
             myProfileDTO.setArtistStatus(artistProfile.getStatus().name());

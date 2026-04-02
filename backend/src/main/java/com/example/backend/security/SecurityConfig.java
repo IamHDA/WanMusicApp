@@ -63,6 +63,7 @@ public class SecurityConfig {
                                 "/v3/api-docs/**",
                                 "/webjars/**",
                                 "/swagger-resources/**",
+                                "/api/v1/payments/webhook",
                                 "/error"
                                 ).permitAll()
                         .anyRequest().authenticated()
@@ -94,12 +95,14 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of(
-                "http://localhost:7000",
-                "http://100.97.109.94:7000",
-                "http://100.87.130.80:5173",
-                "http://100.87.130.80:8080"
-        ));
+        // configuration.setAllowedOrigins(List.of(
+        //         "http://localhost:7000",
+        //         "http://100.97.109.94:7000",
+        //         "http://100.87.130.80:5173",
+        //         "http://100.87.130.80:8080"
+        // ));
+        configuration.setAllowedOrigins(List.of("*"));
+        
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         configuration.setAllowCredentials(true);

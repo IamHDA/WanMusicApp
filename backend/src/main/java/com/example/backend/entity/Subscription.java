@@ -9,6 +9,9 @@ import lombok.Setter;
 import java.time.LocalDate;
 
 @Entity
+@Table(name = "subscription", indexes = {
+        @Index(name = "idx_subscription_active_enddate", columnList = "is_active, end_date")
+})
 @Getter
 @Setter
 @AllArgsConstructor
@@ -18,6 +21,7 @@ public class Subscription {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     @Column(name = "startDate", nullable = false)
     private LocalDate startDate;
     @Column(name = "endDate", nullable = false)
@@ -27,15 +31,19 @@ public class Subscription {
 
     @ManyToOne(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
             optional = false
     )
+    @JoinColumn(name = "subscriber_id")
     private Member subscriber;
 
     @ManyToOne(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
             optional = false
     )
+    @JoinColumn(name = "plan_id")
     private SubscriptionPlan plan;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "payment_id", unique = true)
+    private Payment payment;
 }
