@@ -20,15 +20,21 @@ public class SubscriptionPlanServiceImp implements SubscriptionPlanService {
     private final SubscriptionPlanRepository subscriptionPlanRepo;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String updateSubscriptionPlanPrice(UpdateSubscriptionPlanDTO dto) {
-        Optional<SubscriptionPlan> subscriptionPlan = subscriptionPlanRepo.findById(dto.id());
-        if(dto.price() != subscriptionPlan.get().getPrice())
-            subscriptionPlan.get().setPrice(dto.price());
+        SubscriptionPlan subscriptionPlan = subscriptionPlanRepo.findById(dto.id()).orElseThrow(() -> new RuntimeException("Subscription Plan not found!"));
+        if(dto.price() != subscriptionPlan.getPrice()) {
+            subscriptionPlan.setPrice(dto.price());
+        }
 
-        if(!dto.name().isBlank() && !subscriptionPlan.get().getName().equals(dto.name()))
-            subscriptionPlan.get().setName(dto.name());
+        if(dto.name() != null && !dto.name().isBlank() && !subscriptionPlan.getName().equals(dto.name())) {
+            subscriptionPlan.setName(dto.name());
+        }
+        if (dto.durationDays() > 0 && dto.durationDays() != subscriptionPlan.getDurationDays()){
+            subscriptionPlan.setDurationDays(dto.durationDays());
+        }
 
-        subscriptionPlanRepo.save(subscriptionPlan.get());
+        subscriptionPlanRepo.save(subscriptionPlan);
 
         return "Updated subscription plan successfully!";
     }
@@ -40,6 +46,7 @@ public class SubscriptionPlanServiceImp implements SubscriptionPlanService {
 
         subscriptionPlan.setName(dto.name());
         subscriptionPlan.setPrice(dto.price());
+        subscriptionPlan.setDurationDays(dto.durationDays());
 
         subscriptionPlanRepo.save(subscriptionPlan);
 
@@ -63,6 +70,7 @@ public class SubscriptionPlanServiceImp implements SubscriptionPlanService {
                     dto.setId(plan.getId());
                     dto.setName(plan.getName());
                     dto.setPrice(plan.getPrice());
+                    dto.setDurationDays(plan.getDurationDays());
                     return dto;
                 }).toList();
     }
