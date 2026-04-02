@@ -52,6 +52,9 @@ public class S3StorageServiceImp implements S3StorageService {
 
     @Override
     public String getGetPresignedUrl(String fileKey, String bucketName) {
+        // Guard: tránh URI lỗi khi key null hoặc rỗng
+        if (fileKey == null || fileKey.isBlank()) return null;
+
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
                 .bucket(bucketName)
                 .key(fileKey)

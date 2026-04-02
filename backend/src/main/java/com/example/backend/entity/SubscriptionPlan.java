@@ -20,15 +20,10 @@ public class SubscriptionPlan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(length = 10, nullable = false)
+    @Column(length = 100, nullable = false)
     private String name;
-    private double price;
+    private Long  price;
 
-    @OneToMany(
-            mappedBy = "plan",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
-    )
-    private List<Subscription> subscriptions;
+    @Column(name = "duration_days")
+    private int durationDays;
 }

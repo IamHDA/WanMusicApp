@@ -25,6 +25,7 @@ public abstract class MemberMapper {
 
     @Named("memberAvatarKeyToUrl")
     protected String mapKeyToUrl(String avatarKey){
+        if (avatarKey == null || avatarKey.isBlank()) return null;
         return s3StorageService.getGetPresignedUrl(avatarKey, "avatars");
     }
 }

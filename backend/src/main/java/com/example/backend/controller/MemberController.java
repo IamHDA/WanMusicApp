@@ -8,6 +8,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import com.example.backend.dto.user.MyProfileDTO;
+
 @RestController
 @RequestMapping("/api/v1/member")
 @RequiredArgsConstructor
@@ -18,6 +20,11 @@ public class MemberController {
     @GetMapping("/getProfile/{id}")
     public ResponseEntity<MemberProfileDTO> getProfile(@PathVariable Long id){
         return ResponseEntity.ok(memberService.getProfile(id));
+    }
+
+    @GetMapping("/myProfile")
+    public ResponseEntity<MyProfileDTO> getMyProfile(){
+        return ResponseEntity.ok(memberService.getMyProfile());
     }
 
     @PostMapping("/updateProfile")

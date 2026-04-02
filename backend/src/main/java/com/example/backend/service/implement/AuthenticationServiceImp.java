@@ -15,6 +15,7 @@ import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.security.UserPrinciple;
 import com.example.backend.service.AuthenticationService;
 import com.example.backend.service.MemberService;
+import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -100,21 +101,27 @@ public class AuthenticationServiceImp implements AuthenticationService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public AuthenticationResponse refreshToken(String refreshToken) {
-        UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(refreshToken));
+        try {
+            UserDetails userDetails = userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(refreshToken));
 
-        Optional<Token> token = tokenRepo.findByRefreshToken(refreshToken);
+            Optional<Token> token = tokenRepo.findByRefreshToken(refreshToken);
 
-        if(token.isPresent()){
-            if(jwtTokenProvider.validateRefreshToken(refreshToken, userDetails)){
-                String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
-                String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
+            if (token.isPresent()) {
+                if (jwtTokenProvider.validateRefreshToken(refreshToken, userDetails)) {
+                    String accessToken = jwtTokenProvider.generateAccessToken(userDetails);
+                    String newRefreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
-                saveToken(userDetails.getUsername(), accessToken, newRefreshToken);
+                    saveToken(userDetails.getUsername(), accessToken, newRefreshToken);
 
-                return new AuthenticationResponse(null, accessToken, newRefreshToken, "Token refreshed successfully!");
+                    return new AuthenticationResponse(null, accessToken, newRefreshToken, "Token refreshed successfully!");
+                }
             }
+            return new AuthenticationResponse(null, null, null, "Token expired!");
+        } catch (ExpiredJwtException e) {
+            return new AuthenticationResponse(null, null, null, "Refresh token expired.");
+        } catch (Exception e) {
+            return new AuthenticationResponse(null, null, null, "Invalid token.");
         }
-        return new AuthenticationResponse(null, null, null, "Token expired!");
     }
 
     @Override
@@ -141,6 +148,6 @@ public class AuthenticationServiceImp implements AuthenticationService {
         token.setLoggedOut(false);
         token.setUser(userRepo.findByEmail(email).orElseThrow(()-> new RuntimeException("User not found!")));
 
-        tokenRepo.save(token);
+        tokenRepo.saveAndFlush(token);
     }
 }

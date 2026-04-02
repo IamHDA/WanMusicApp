@@ -1,9 +1,8 @@
 package com.example.backend.service;
 
 
-import com.example.backend.dto.subscription.UserSubscriptionDTO;
+import com.example.backend.dto.subscription.UserSubscriptionRequestDTO;
 
 public interface SubscriptionService {
-    String subscribe(Long planId);
-    UserSubscriptionDTO getUserCurrentSubscription();
+    UserSubscriptionRequestDTO getUserCurrentSubscription();
 }

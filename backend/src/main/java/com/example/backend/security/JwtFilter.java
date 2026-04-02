@@ -25,6 +25,7 @@ public class JwtFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        String path = request.getServletPath();
         try{
             String authHeader = request.getHeader("Authorization");
             String accessToken = null;
@@ -40,10 +41,18 @@ public class JwtFilter extends OncePerRequestFilter {
                         UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
                         token.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(token);
+                    } else {
+                        // LOGGING: Token không hợp lệ (có thể do Database báo đã logout)
+                        System.out.println("DEBUG JWT: Token validated FALSE for path: " + path);
+                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        response.setContentType("application/json");
+                        response.getWriter().write("{\"error\": \"AccessToken invalid or logged out!\"}");
+                        return;
                     }
                 }
             }
         }catch(Exception e){
+            System.out.println("DEBUG JWT: Exception on path " + path + ": " + e.getMessage());
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             response.setContentType("application/json");
             if(e instanceof ExpiredJwtException){
