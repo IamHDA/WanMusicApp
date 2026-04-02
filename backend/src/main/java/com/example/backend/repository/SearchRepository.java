@@ -15,6 +15,7 @@ import com.example.backend.mapper.ArtistProfileMapper;
 import com.example.backend.mapper.MemberMapper;
 import com.example.backend.mapper.TrackMapper;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.util.FriendUtil;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.TypedQuery;
 import lombok.RequiredArgsConstructor;
@@ -23,8 +24,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -37,6 +37,7 @@ public class SearchRepository {
     private final ArtistProfileMapper artistProfileMapper;
     private final MemberMapper memberMapper;
     private final AlbumMapper albumMapper;
+    private final FriendUtil friendUtil;
 
     public SearchResponseDTO search(SearchRequestDTO searchRequestDTO) {
         String keyword = searchRequestDTO.keyword();
@@ -188,28 +189,60 @@ public class SearchRepository {
     }
 
     private List<MemberProfilePreviewDTO> searchMembers(String keyword, int pageSize, int offset) {
-        String jpql = "SELECT m, " +
-                " (SELECT f.status FROM Friendship f " +
-                "  WHERE (f.member.id = m.id AND f.friend.id = :currentUserId) " +
-                "     OR (f.friend.id = m.id AND f.member.id = :currentUserId)) " +
-                " FROM Member m " +
-                " WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
-                " AND m.id <> :currentUserId";
+        String jpql =
+                "SELECT m, f " +
+                        "FROM Member m " +
+                        "LEFT JOIN Friendship f ON (" +
+                        "   (f.member.id = m.id AND f.friend.id = :currentUserId) OR " +
+                        "   (f.friend.id = m.id AND f.member.id = :currentUserId)" +
+                        ") " +
+                        "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
+                        "AND m.id <> :currentUserId " +
+                        "ORDER BY CASE " +
+                        "WHEN f IS NULL THEN 1 " +
+                        "WHEN f.status = 'PENDING' THEN 2 " +
+                        "WHEN f.status = 'ACCEPTED' THEN 3 " +
+                        "ELSE 0 END DESC";
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
+        Long currentUserId = authenticationService.getCurrentMemberId();
+
         query.setParameter("keyword", "%" + keyword + "%");
-        query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
+        query.setParameter("currentUserId", currentUserId);
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
 
-        return query.getResultList().stream()
+//        Set<Long> includedMemberIds = new HashSet<>();
+//        List<MemberProfilePreviewDTO> memberProfilePreviewDTOS = new ArrayList<>();
+//
+//        query.getResultList().forEach(result -> {
+//            Member member = (Member) result[0];
+//            Friendship friendship = result[1] != null ? (Friendship) result[1] : null;
+//
+//            MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(member);
+//            memberProfilePreviewDTO.setFriendStatus(friendUtil.getFriendshipStatus(friendship, currentUserId));
+//
+//            if(!includedMemberIds.contains(member.getId()))
+//                memberProfilePreviewDTOS.add(memberProfilePreviewDTO);
+//
+//            includedMemberIds.add(member.getId());
+//        });
+//
+//        return memberProfilePreviewDTOS;
+
+        System.out.println(currentUserId);
+
+        return query.getResultList()
+                .stream()
                 .map(result -> {
-                    Member a = (Member) result[0];
-                    FriendStatus status = result[1] != null ? FriendStatus.valueOf((String) result[1]) : null;
-                    MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(a);
-                    memberProfilePreviewDTO.setFriendStatus(status);
+                    Member member = (Member) result[0];
+                    Friendship friendship = result[1] != null ? (Friendship) result[1] : null;
+
+                    MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(member);
+                    memberProfilePreviewDTO.setFriendStatus(friendUtil.getFriendshipStatus(friendship, currentUserId));
+
                     return memberProfilePreviewDTO;
                 })
-                .collect(Collectors.toList());
+                .toList();
     }
 
     private Long searchMemberCount(String keyword){
@@ -235,7 +268,7 @@ public class SearchRepository {
         List<MemberProfilePreviewDTO> content = fetch.getResultList().stream()
                 .map(member -> {
                     MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(member);
-                    memberProfilePreviewDTO.setFriendStatus(FriendStatus.ACCEPTED);
+                    memberProfilePreviewDTO.setFriendStatus("ACCEPTED");
                     return memberProfilePreviewDTO;
                 })
                 .toList();

@@ -18,13 +18,18 @@ public class FriendshipController {
     }
 
     @PutMapping("/acceptFriend/{friendId}")
-    public ResponseEntity<String> acceptFriendRequestByFriendId(@PathVariable Long friendId){
+    public ResponseEntity<String> acceptFriendRequest(@PathVariable Long friendId){
         return ResponseEntity.ok(friendshipService.acceptFriendRequest(friendId));
     }
 
-    @PutMapping("/acceptFriend/{fiendshipId}")
-    public ResponseEntity<String> acceptFriendRequestByFiendshipId(@PathVariable Long fiendshipId){
-        return ResponseEntity.ok(friendshipService.acceptFriendRequest(fiendshipId));
+    @PutMapping("/rejectFriend/{friendId}")
+    public ResponseEntity<String> rejectFriendRequest(@PathVariable Long friendId){
+        return ResponseEntity.ok(friendshipService.rejectFriendRequest(friendId));
+    }
+
+    @DeleteMapping("/deleteFriendRequest/{friendId}")
+    public ResponseEntity<String> deleteFriendRequest(@PathVariable Long friendId){
+        return ResponseEntity.ok(friendshipService.deleteFriendRequest(friendId));
     }
 
     @DeleteMapping("/deleteFriend/{id}")

@@ -12,5 +12,6 @@ public interface PlaylistService {
     int countPlaylistsByOwnerId(Long ownerId);
     Long createPlaylist(String name);
     String updatePlaylistDetail(UpdatePlaylistDetailDTO dto);
+    String setPlaylistToPublic(Long playlistId);
     String deletePlaylist(Long playlistId);
 }

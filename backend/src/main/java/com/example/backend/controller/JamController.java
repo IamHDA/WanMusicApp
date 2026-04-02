@@ -2,6 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
 import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
+import com.example.backend.dto.jam.UpdateJamSessionRequestDTO;
 import com.example.backend.service.JamParticipantService;
 import com.example.backend.service.JamSessionService;
 import lombok.RequiredArgsConstructor;
@@ -24,5 +25,15 @@ public class JamController {
     @PutMapping("/join")
     public ResponseEntity<String> joinJamSession(@RequestBody AcceptInvitationRequestDTO dto){
         return ResponseEntity.ok(jamParticipantService.joinJam(dto));
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<String> updateJamSession(@RequestBody UpdateJamSessionRequestDTO dto){
+        return ResponseEntity.ok(jamSessionService.updateJamSession(dto));
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> leaveJamSession(@PathVariable Long id){
+        return ResponseEntity.ok(jamSessionService.deleteJamSession(id));
     }
 }

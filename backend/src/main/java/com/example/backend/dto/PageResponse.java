@@ -13,8 +13,16 @@ import java.util.List;
 @NoArgsConstructor
 public class PageResponse <T> {
     private List<T> content;
-    private int currentPage;
-    private int pageSize;
-    private long totalElements;
-    private int totalPages;
+    private Integer currentPage;
+    private Integer pageSize;
+    private Long totalElements;
+    private Integer totalPages;
+
+    public PageResponse(List<T> content, int currentPage, int pageSize){
+        this.content = content;
+        this.currentPage = currentPage;
+        this.pageSize = pageSize;
+        this.totalElements = null;
+        this.totalPages = null;
+    }
 }

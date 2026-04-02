@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -34,7 +35,8 @@ public class TrackServiceImp implements TrackService {
     private final TagRepository tagRepo;
     private final TrackMapper trackMapper;
     private final PageMapper pageMapper;
-    private final NotificationService notificationService;
+
+    private WebClient webClient;
 
     @Override
     public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
@@ -54,13 +56,21 @@ public class TrackServiceImp implements TrackService {
 
         trackRepo.save(track);
 
-        List<TrackTag> tags = tagRepo.findAllById(dto.tagIds())
+        List<String> predictedTags = webClient.get()
+                .uri("/predict")
+                .retrieve()
+                .bodyToFlux(String.class)
+                .collectList()
+                .block();
+
+        List<TrackTag> tags = tagRepo.findByNameIn(predictedTags)
                 .stream()
                 .map(tag -> new TrackTag(
                         track,
                         tag
                 ))
                 .toList();
+
         List<ArtistContribution> featuredArtists = artistProfileRepo.findAllById(dto.featuredArtistIds())
                 .stream()
                 .map(artist -> new ArtistContribution(

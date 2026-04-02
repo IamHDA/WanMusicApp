@@ -3,7 +3,7 @@ package com.example.backend.service.implement;
 import com.example.backend.Enum.InteractionType;
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CreateJamNotificationDTO;
-import com.example.backend.dto.JamNotificationDTO;
+import com.example.backend.dto.jam.JamNotificationDTO;
 import com.example.backend.entity.JamNotification;
 import com.example.backend.entity.JamSession;
 import com.example.backend.entity.Member;

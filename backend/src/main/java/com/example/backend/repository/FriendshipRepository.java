@@ -13,7 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 public interface FriendshipRepository extends JpaRepository <Friendship, FriendshipId> {
     @Query(
             "select count(f) from Friendship f " +
-            "where f.friend.id = :userId or f.member.id = :userId"
+            "where (f.friend.id = :userId or f.member.id = :userId) " +
+            "and f.status = 'ACCEPTED'"
     )
     int countFriendByUserId(@Param("userId") Long userId);
 

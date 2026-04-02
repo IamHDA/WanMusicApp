@@ -46,6 +46,11 @@ public class PlaylistController {
         return ResponseEntity.ok(playlistService.updatePlaylistDetail(dto));
     }
 
+    @PutMapping("/setPublic/{id}")
+    public ResponseEntity<String> setPublicPlaylist(@PathVariable Long id){
+        return ResponseEntity.ok(playlistService.setPlaylistToPublic(id));
+    }
+
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deletePlaylist(@PathVariable Long id){
         return ResponseEntity.ok(playlistService.deletePlaylist(id));

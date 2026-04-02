@@ -32,7 +32,6 @@ public class JamNotification {
 
     @ManyToOne(
             fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
             optional = false
     )
     @JoinColumn(name = "session_id")

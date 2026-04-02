@@ -79,6 +79,15 @@ public class PlaylistServiceImp implements PlaylistService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
+    public String setPlaylistToPublic(Long playlistId) {
+        Playlist playlist = playlistRepo.findById(playlistId).orElseThrow(()-> new RuntimeException("Playlist not found!"));
+        playlist.setPublic(true);
+
+        return "Set playlist to public successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
     public String deletePlaylist(Long playlistId) {
         playlistRepo.deleteById(playlistId);
         return "Playlist deleted successfully!";

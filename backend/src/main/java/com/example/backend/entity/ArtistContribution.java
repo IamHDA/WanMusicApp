@@ -18,16 +18,14 @@ public class ArtistContribution {
     private ArtistContributionId id;
 
     @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     @MapsId("trackId")
     @JoinColumn(name = "track_id")
     private Track track;
 
     @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     @MapsId("artistId")
     @JoinColumn(name = "artist_id")

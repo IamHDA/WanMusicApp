@@ -53,22 +53,19 @@ public class JamSession {
     private List<JamNotification> notifications;
 
     @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "current_track_id")
     private Track currentTrack;
 
     @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "context_playlist_id")
     private Playlist contextPlaylist;
 
     @ManyToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "context_album_id")
     private Album contextAlbum;

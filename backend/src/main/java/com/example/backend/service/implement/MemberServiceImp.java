@@ -4,14 +4,18 @@ import com.example.backend.dto.user.AccountSettingsDTO;
 import com.example.backend.dto.user.MemberProfileDTO;
 import com.example.backend.dto.user.MyProfileDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
+import com.example.backend.entity.ArtistProfile;
 import com.example.backend.entity.Member;
 import com.example.backend.mapper.MemberMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.*;
+import com.example.backend.util.FriendUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -24,7 +28,9 @@ public class MemberServiceImp implements MemberService {
     private final FollowerService followerService;
     private final PlaylistService playlistService;
     private final FriendshipService friendshipService;
+    private final FriendUtil friendUtil;
     private final S3StorageService s3StorageService;
+    private final ArtistProfileRepository artistProfileRepo;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -52,8 +58,13 @@ public class MemberServiceImp implements MemberService {
         MemberProfileDTO memberProfileDTO = memberMapper.toProfileDTO(member);
 
         Long currentUserId = authenticationService.getCurrentMemberId();
-        String status = friendshipService.getFriendshipStatus(currentUserId, memberId);
+        String status = friendUtil.getFriendshipStatus(currentUserId, memberId);
         memberProfileDTO.setFriendStatus(status);
+
+        if(currentUserId.equals(memberId)){
+            Optional<ArtistProfile> artistProfile = artistProfileRepo.findByMemberId(memberId);
+            memberProfileDTO.setArtist(artistProfile.isPresent());
+        }
 
         memberProfileDTO.setFollowedArtistCount(followerService.countFollowedArtistByUserId(memberId));
         memberProfileDTO.setFriendCount(friendshipService.countFriendByUserId(memberId));
@@ -70,10 +81,7 @@ public class MemberServiceImp implements MemberService {
         MyProfileDTO myProfileDTO = new MyProfileDTO();
         myProfileDTO.setId(member.getId());
         myProfileDTO.setDisplayName(member.getFullName());
-        String avatarKey = member.getAvatarKey();
-        if (avatarKey != null && !avatarKey.isBlank()) {
-            myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(avatarKey, "avatars"));
-        }
+        myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(member.getAvatarKey(), "avatars"));
 
         artistProfileRepo.findByMemberId(currentUserId).ifPresent(artistProfile -> {
             myProfileDTO.setArtistStatus(artistProfile.getStatus().name());

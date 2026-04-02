@@ -5,7 +5,6 @@ import com.example.backend.dto.CreateJamInvitationRequestDTO;
 import com.example.backend.dto.CreateJamNotificationDTO;
 import com.example.backend.dto.CreateNotificationDTO;
 import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
-import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
 import com.example.backend.entity.EmbeddedId.JamParticipantId;
 import com.example.backend.entity.JamParticipant;
 import com.example.backend.entity.JamSession;

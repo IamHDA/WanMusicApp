@@ -1,4 +1,4 @@
-package com.example.backend.dto;
+package com.example.backend.dto.jam;
 
 import com.example.backend.Enum.NotificationType;
 

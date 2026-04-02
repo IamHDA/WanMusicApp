@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
+import com.example.backend.dto.jam.UpdateJamSessionRequestDTO;
 import com.example.backend.entity.JamSession;
 import com.example.backend.repository.JamSessionRepository;
 import com.example.backend.repository.MemberRepository;
@@ -30,7 +31,25 @@ public class JamSessionServiceImp implements JamSessionService {
         jamSession.setPublic(dto.isPrivate());
         jamSessionRepo.save(jamSession);
 
-
         return "Created jam session successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String updateJamSession(UpdateJamSessionRequestDTO dto) {
+        JamSession jamSession = jamSessionRepo.findById(dto.jamSessionId()).get();
+        jamSession.setPublic(dto.isPublic());
+        jamSession.setSize(dto.size());
+
+        return "Updated jam session successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String deleteJamSession(Long jamSessionId) {
+        JamSession jamSession = jamSessionRepo.findById(jamSessionId).get();
+        jamSessionRepo.delete(jamSession);
+
+        return "Deleted jam session successfully!";
     }
 }

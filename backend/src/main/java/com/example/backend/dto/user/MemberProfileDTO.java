@@ -11,6 +11,7 @@ public class MemberProfileDTO {
     private String displayName;
     private String avatarUrl;
     private String friendStatus;
+    private boolean isArtist;
     private int followedArtistCount;
     private int friendCount;
     private int playlistCount;

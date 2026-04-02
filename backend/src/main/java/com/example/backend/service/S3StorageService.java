@@ -8,7 +8,7 @@ import java.io.IOException;
 
 public interface S3StorageService {
     String uploadFile(MultipartFile file, String bucketName) throws IOException;
-    String deleteFile(String fileKey, String bucketName);
+    void deleteFile(String fileKey, String bucketName);
     String getGetPresignedUrl(String fileKey, String bucketName);
     PresignedUploadResponseDTO getPutPresignedUrl(PresignedUploadRequestDTO request);
 }

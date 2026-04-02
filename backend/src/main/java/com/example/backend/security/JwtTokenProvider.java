@@ -29,6 +29,7 @@ public class JwtTokenProvider {
     private String generateKey(UserDetails userDetails, long expirationTime){
         return Jwts.builder()
                 .subject(userDetails.getUsername())
+                .claim("role", userDetails.getAuthorities().stream().findFirst().orElseThrow().getAuthority())
                 .signWith(decodeSecretString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
@@ -36,7 +37,7 @@ public class JwtTokenProvider {
     }
 
     public String generateAccessToken(UserDetails userDetails){
-        return generateKey(userDetails, 1000 * 60 * 6);
+        return generateKey(userDetails, 1000 * 60 * 60);
     }
 
     public String generateRefreshToken(UserDetails userDetails){

@@ -1,16 +1,13 @@
 package com.example.backend.service.implement;
 
-import com.example.backend.Enum.AlbumStatus;
-import com.example.backend.Enum.ArtistProfileStatus;
-import com.example.backend.Enum.TrackStatus;
-import com.example.backend.entity.Album;
-import com.example.backend.entity.AlbumTrack;
-import com.example.backend.entity.ArtistProfile;
-import com.example.backend.entity.Track;
+import com.example.backend.Enum.*;
+import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.entity.*;
 import com.example.backend.repository.AlbumRepository;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.service.AdminService;
+import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,6 +22,7 @@ public class AdminServiceImp implements AdminService {
     private final ArtistProfileRepository artistProfileRepo;
     private final AlbumRepository albumRepo;
     private final TrackRepository trackRepo;
+    private final NotificationService notificationService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -47,6 +45,30 @@ public class AdminServiceImp implements AdminService {
     public String approveTrackRequest(Long trackId) {
         Track track = trackRepo.findById(trackId).orElseThrow(()-> new RuntimeException("Track not found!"));
         track.setStatus(TrackStatus.PUBLISHED);
+
+        Long artistId = track.getContributions()
+                .stream()
+                .filter(c -> c.getRole() == ContributorRole.OWNER)
+                .map(c -> c.getContributor().getId())
+                .findFirst()
+                .orElse(null);
+
+        ArtistProfile artistProfile = artistProfileRepo.findById(artistId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+
+        List<Member> followers = artistProfile.getFollowers()
+                .stream()
+                .map(Follower::getFollower)
+                .toList();
+
+        for(Member follower : followers){
+            CreateNotificationDTO notificationDTO = new CreateNotificationDTO();
+            notificationDTO.setSenderName(artistProfile.getStageName());
+            notificationDTO.setTargetId(follower.getId());
+            notificationDTO.setTrackId(track.getId());
+            notificationDTO.setNotificationType(NotificationType.SONG_RELEASING);
+
+            notificationService.sendNotification(notificationDTO);
+        }
 
         return "Track approved successfully!";
     }
