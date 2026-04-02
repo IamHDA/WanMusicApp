@@ -29,7 +29,7 @@ public class JwtTokenProvider {
     private String generateKey(UserDetails userDetails, long expirationTime){
         return Jwts.builder()
                 .subject(userDetails.getUsername())
-                .claim("role", userDetails.getAuthorities().stream().findFirst().orElseThrow().getAuthority(d .))
+                .claim("role", userDetails.getAuthorities().stream().findFirst().orElseThrow().getAuthority())
                 .signWith(decodeSecretString())
                 .issuedAt(new Date(System.currentTimeMillis()))
                 .expiration(new Date(System.currentTimeMillis() + expirationTime))
