@@ -10,7 +10,7 @@ LABELS_FALLBACK = [
     "acoustic", "ballad", "bolero", "cai_luong", "cheo",
     "chill", "dan_ca", "edm", "hiphop", "house",
     "indie", "instrumental", "lofi", "nhac_cach_mang", "nhac_dan_toc",
-    "nhac_hoc_bai", "nhac_phim_ost", "nhac_thu_gian",
+    "nhac_hoc_bai", "nhac_phim_ost", "nhac_thieu_nhi", "nhac_thu_gian",
     "nhac_vang", "nhac_xua", "quan_ho", "rap", "remix",
     "rnb", "rock", "techno", "trap", "tru_tinh", "vpop"
 ]
