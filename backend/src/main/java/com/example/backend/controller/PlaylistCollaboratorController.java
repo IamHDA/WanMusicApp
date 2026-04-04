@@ -1,5 +1,6 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.UpdateCollaboratorPermissionRequestDTO;
 import com.example.backend.dto.UpdateCollaboratorRequestDTO;
 import com.example.backend.service.PlaylistCollaboratorService;
 import lombok.RequiredArgsConstructor;
@@ -16,6 +17,17 @@ public class PlaylistCollaboratorController {
     @PostMapping("/add")
     public ResponseEntity<String> addCollaboratorToPlaylist(@RequestBody UpdateCollaboratorRequestDTO dto){
         return ResponseEntity.ok(playlistCollaboratorService.addCollaboratorToPlaylist(dto));
+    }
+
+    @PutMapping("/updatePermission")
+    public ResponseEntity<String> updateCollaboratorPermission(@RequestBody UpdateCollaboratorPermissionRequestDTO dto){
+        return ResponseEntity.ok(playlistCollaboratorService.updateCollaboratorPermissions(dto));
+    }
+
+
+    @PutMapping("/revokePermission")
+    public ResponseEntity<String> revokeCollaboratorPermission(@RequestBody UpdateCollaboratorPermissionRequestDTO dto){
+        return ResponseEntity.ok(playlistCollaboratorService.revokeCollaboratorPermissions(dto));
     }
 
     @DeleteMapping("/delete")

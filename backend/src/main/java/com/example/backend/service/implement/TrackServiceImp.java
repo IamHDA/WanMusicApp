@@ -2,7 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.PageResponse;
-import com.example.backend.dto.UpdateTrackStatusDTO;
+import com.example.backend.dto.track.UpdateTrackStatusDTO;
 import com.example.backend.dto.track.TrackAdminReviewDTO;
 import com.example.backend.dto.track.TrackCreateDraftDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
@@ -13,8 +13,6 @@ import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TrackRepository;
-import com.example.backend.service.NotificationService;
-import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
@@ -23,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.reactive.function.client.WebClient;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -62,6 +59,10 @@ public class TrackServiceImp implements TrackService {
                 .bodyToFlux(String.class)
                 .collectList()
                 .block();
+
+        for(String tag : predictedTags){
+            System.out.println(tag);
+        }
 
         List<TrackTag> tags = tagRepo.findByNameIn(predictedTags)
                 .stream()

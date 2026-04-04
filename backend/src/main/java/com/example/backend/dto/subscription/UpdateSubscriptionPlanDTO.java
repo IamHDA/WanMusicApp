@@ -1,4 +1,4 @@
-package com.example.backend.dto;
+package com.example.backend.dto.subscription;
 
 public record UpdateSubscriptionPlanDTO(
         Long id,
