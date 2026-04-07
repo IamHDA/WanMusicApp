@@ -114,6 +114,9 @@ public class FriendshipServiceImp implements FriendshipService {
     public String getFriendshipStatus(Long currentUserId, Long friendId) {
         Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentUserId, friendId);
 
+        if(friendship == null)
+            return "NONE";
+
         if(Objects.equals(friendship.getMember().getId(), currentUserId) && friendship.getStatus().equals(FriendStatus.PENDING))
             return "PENDING_SENT";
         if(Objects.equals(friendship.getFriend().getId(), currentUserId) && friendship.getStatus().equals(FriendStatus.PENDING))

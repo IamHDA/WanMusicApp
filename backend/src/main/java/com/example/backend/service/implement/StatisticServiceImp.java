@@ -10,7 +10,10 @@ import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.repository.UserInteractionRepository;
+import com.example.backend.service.RedisService;
 import com.example.backend.service.StatisticService;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,6 +31,8 @@ public class StatisticServiceImp implements StatisticService {
     private final AuthenticationServiceImp authenticationService;
     private final TrackRepository trackRepo;
     private final MemberRepository memberRepo;
+    private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -57,14 +62,35 @@ public class StatisticServiceImp implements StatisticService {
 
     @Override
     public TrackStatisticDTO getTrackStatistic(Long trackId) {
-        return userInteractionRepo.findByTrackId(trackId);
+        String redisKey = "statistic/track/" + trackId;
+
+        if(redisService.hasKey(redisKey)){
+            Object redisData = redisService.get(redisKey);
+            return objectMapper.convertValue(redisData, TrackStatisticDTO.class);
+
+        }
+        TrackStatisticDTO dto = userInteractionRepo.findByTrackId(trackId);
+        redisService.save(redisKey, dto, 60);
+
+        return dto;
     }
 
     @Override
     public List<TrackPreviewDTO> getTopTracks() {
-        return userInteractionRepo.findTopTracksInMonth(LocalDateTime.now().getMonthValue())
+        String redisKey = "statistic/topTracks";
+
+        if(redisService.hasKey(redisKey)){
+            Object redisData = redisService.get(redisKey);
+            return objectMapper.convertValue(redisData, new TypeReference<List<TrackPreviewDTO>>() {});
+        }
+
+        List<TrackPreviewDTO> dtos = userInteractionRepo.findTopTracksInMonth(LocalDateTime.now().getMonthValue())
                 .stream()
                 .map(trackMapper::toTrackPreviewDTO)
                 .collect(Collectors.toList());
+
+        redisService.save(redisKey, dtos, 60);
+
+        return dtos;
     }
 }

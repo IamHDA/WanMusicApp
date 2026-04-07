@@ -28,7 +28,6 @@ public class PlayerServiceImp implements PlayerService {
 
     @Override
     public PageResponse<TrackPreviewDTO> generateQueue(int index) {
-
         Long currentMemberId = authenticationService.getCurrentMemberId();
         Track currentTrack = playerStateRepo.findByMemberId(currentMemberId).get().getTrack();
 

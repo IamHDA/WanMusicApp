@@ -20,6 +20,8 @@ public class Tag {
     private Long id;
     @Column(length = 50, nullable = false)
     private String name;
+    @Column(length = 50, nullable = false)
+    private String displayName;
     @Column(name = "description", nullable = false)
     private String description;
 
@@ -29,9 +31,7 @@ public class Tag {
 
     @OneToMany(
             mappedBy = "tag",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
     private List<TrackTag> tracks;
 

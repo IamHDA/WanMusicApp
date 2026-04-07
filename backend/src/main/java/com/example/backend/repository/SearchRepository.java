@@ -114,7 +114,7 @@ public class SearchRepository {
                 "CASE WHEN COUNT(f.id) > 0 THEN true ELSE false END " +
                 "FROM ArtistProfile a " +
                 "LEFT JOIN Follower f ON a.id = f.artist.id AND f.follower.id = :currentUserId " +
-                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) AND a.id <> :currentUserId " +
+                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) AND a.member.id <> :currentUserId AND a.status = 'VERIFIED'" +
                 "GROUP BY a";
 
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
@@ -150,12 +150,15 @@ public class SearchRepository {
         String jpql = "SELECT DISTINCT t FROM Track t " +
                 "LEFT JOIN FETCH t.contributions c " +
                 "LEFT JOIN FETCH c.contributor " +
-                "WHERE LOWER(t.title) LIKE LOWER(:keyword)";
+                "WHERE LOWER(t.title) LIKE LOWER(:keyword) AND t.status = 'PUBLISHED'";
+
 
         TypedQuery<Track> query = entityManager.createQuery(jpql, Track.class);
         query.setParameter("keyword", "%" + keyword + "%");
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
+
+
 
         return query.getResultList().stream()
                 .map(trackMapper::toTrackPreviewDTO)

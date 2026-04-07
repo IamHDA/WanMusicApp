@@ -1,7 +1,9 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.CollaboratorPermission;
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.dto.UpdateCollaboratorPermissionRequestDTO;
 import com.example.backend.dto.UpdateCollaboratorRequestDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Playlist;
@@ -17,6 +19,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -67,12 +70,43 @@ public class PlaylistCollaboratorServiceImp implements PlaylistCollaboratorServi
         List<PlaylistCollaborator> playlistCollaborators = new ArrayList<>();
 
         for(Long userId : dto.userIds()) {
-            PlaylistCollaborator playlistCollaborator = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(playlistId, userId).get();
+            PlaylistCollaborator playlistCollaborator = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(playlistId, userId)
+                    .orElseThrow(()-> new RuntimeException("Collaborator not found!"));
             playlistCollaborators.add(playlistCollaborator);
         }
 
         playlistCollaboratorRepo.deleteAll(playlistCollaborators);
 
         return "Collaborators removed from playlist successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String updateCollaboratorPermissions(UpdateCollaboratorPermissionRequestDTO dto) {
+        PlaylistCollaborator playlistCollaborator = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(dto.playlistId(), dto.collaboratorId())
+                .orElseThrow(()-> new RuntimeException("Collaborator not found!"));
+
+        for(String permission : dto.permissions()){
+            CollaboratorPermission perm = CollaboratorPermission.valueOf(permission);
+            playlistCollaborator.getCollabPermission().add(perm);
+        }
+
+        return "Add permissions successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String revokeCollaboratorPermissions(UpdateCollaboratorPermissionRequestDTO dto) {
+        PlaylistCollaborator playlistCollaborator = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(dto.playlistId(), dto.collaboratorId())
+                .orElseThrow(()-> new RuntimeException("Collaborator not found!"));
+
+        Set<CollaboratorPermission> permissions = playlistCollaborator.getCollabPermission();
+
+        for(String permission : dto.permissions()){
+            CollaboratorPermission perm = CollaboratorPermission.valueOf(permission);
+            permissions.remove(perm);
+        }
+
+        return "Remove permissions successfully!";
     }
 }

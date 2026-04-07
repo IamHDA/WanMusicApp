@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -65,9 +66,10 @@ public class PlaylistServiceImp implements PlaylistService {
     public String updatePlaylistDetail(UpdatePlaylistDetailDTO dto) {
         Optional<PlaylistCollaborator> playlistCollab = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(
                 dto.id(), authenticationService.getCurrentMemberId());
-        if(playlistCollab.isEmpty())
-            throw new RuntimeException("You are not a collaborator of this playlist!");
         Playlist playlist = playlistRepo.findById(dto.id()).orElseThrow(()-> new RuntimeException("Playlist not found!"));
+
+        if(!Objects.equals(playlist.getOwner().getId(), authenticationService.getCurrentMemberId()) && playlistCollab.isEmpty())
+            throw new RuntimeException("You are not a collaborator of this playlist!");
 
         playlist.setTitle(dto.name());
         playlist.setDescription(dto.description());

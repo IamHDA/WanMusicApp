@@ -1,30 +1,39 @@
 package com.example.backend.service.implement;
 
+import com.example.backend.Enum.ContributorRole;
 import com.example.backend.Enum.TrackStatus;
+import com.example.backend.dto.ContributorDTO;
 import com.example.backend.dto.PageResponse;
-import com.example.backend.dto.UpdateTrackStatusDTO;
-import com.example.backend.dto.track.TrackAdminReviewDTO;
-import com.example.backend.dto.track.TrackCreateDraftDTO;
-import com.example.backend.dto.track.TrackDraftResponseDTO;
-import com.example.backend.dto.track.TrackSubmitDTO;
+import com.example.backend.dto.track.*;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.PageMapper;
 import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TrackRepository;
-import com.example.backend.service.NotificationService;
 import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.client.MultipartBodyBuilder;
+import org.springframework.http.client.reactive.JdkClientHttpConnector;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.http.HttpClient;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,8 +44,7 @@ public class TrackServiceImp implements TrackService {
     private final TagRepository tagRepo;
     private final TrackMapper trackMapper;
     private final PageMapper pageMapper;
-
-    private WebClient webClient;
+    private final S3StorageService s3StorageService;
 
     @Override
     public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
@@ -45,7 +53,7 @@ public class TrackServiceImp implements TrackService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public TrackDraftResponseDTO createDraft(TrackCreateDraftDTO dto) {
+    public TrackDraftResponseDTO createDraft(TrackCreateDraftDTO dto) throws IOException {
         Track track = new Track();
         track.setTitle(dto.title());
         track.setFileKey(dto.trackKey());
@@ -56,12 +64,47 @@ public class TrackServiceImp implements TrackService {
 
         trackRepo.save(track);
 
-        List<String> predictedTags = webClient.get()
+        HttpClient jdkHttpClient = HttpClient.newBuilder()
+                .version(HttpClient.Version.HTTP_1_1)
+                .build();
+
+        WebClient webClient = WebClient.builder()
+                .clientConnector(new JdkClientHttpConnector(jdkHttpClient))
+                .baseUrl("http://localhost:1111")
+                .build();
+
+        InputStream stream = s3StorageService.getFile(track.getFileKey(), "songs");
+        byte[] fileBytes = stream.readAllBytes();
+
+        String fileNameWithExt = track.getFileKey();
+        if (!fileNameWithExt.contains(".")) {
+            fileNameWithExt += ".mp3";
+        }
+        final String finalFileName = fileNameWithExt;
+
+        ByteArrayResource resource = new ByteArrayResource(fileBytes) {
+            @Override
+            public String getFilename() {
+                return finalFileName;
+            }
+        };
+
+        MultipartBodyBuilder builder = new MultipartBodyBuilder();
+        builder.part("file", resource)
+                .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
+                .contentType(MediaType.parseMediaType("audio/mpeg"));
+
+        List<String> predictedTags = webClient.post()
                 .uri("/predict")
+                .contentType(MediaType.MULTIPART_FORM_DATA)
+                .body(BodyInserters.fromMultipartData(builder.build()))
                 .retrieve()
-                .bodyToFlux(String.class)
-                .collectList()
+                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
                 .block();
+
+        for(String tag : predictedTags){
+            System.out.println(tag);
+        }
 
         List<TrackTag> tags = tagRepo.findByNameIn(predictedTags)
                 .stream()
@@ -69,20 +112,28 @@ public class TrackServiceImp implements TrackService {
                         track,
                         tag
                 ))
-                .toList();
+                .collect(Collectors.toList());
 
-        List<ArtistContribution> featuredArtists = artistProfileRepo.findAllById(dto.featuredArtistIds())
-                .stream()
-                .map(artist -> new ArtistContribution(
-                        track,
-                        artist
-                ))
-                .toList();
+        List<ArtistContribution> contributions = new ArrayList<>();
 
-        track.getTags().addAll(tags);
-        track.getContributions().addAll(featuredArtists);
+        for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
+            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
+            ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
+            contributions.add(new ArtistContribution(track, contributor, role));
+        }
+
+        track.setTags(tags);
+        track.setContributions(contributions);
+
+        trackRepo.save(track);
 
         return trackMapper.toTrackDraftResponse(track);
+    }
+
+    @Override
+    public PageResponse<TrackPreviewDTO> searchTracksAddToPlaylist(List<Long> existedTrackIds, String keyword, int index, int size) {
+        Page<Track> foundedTracks = trackRepo.findAllByIdNotInAndTitleContainingIgnoreCase(existedTrackIds, keyword, PageRequest.of(index, size));
+        return pageMapper.toPageResponse(foundedTracks, trackMapper::toTrackPreviewDTO);
     }
 
     @Override
@@ -101,15 +152,19 @@ public class TrackServiceImp implements TrackService {
         if(track.getStatus() != TrackStatus.DRAFT) throw new RuntimeException("Track is not in draft status!");
 
         track.getTags().clear();
+        track.getContributions().clear();
+
+        trackRepo.flush();
+
         List<Tag> tags = tagRepo.findAllById(dto.tagIds());
         for(Tag tag : tags){
             track.getTags().add(new TrackTag(track, tag));
         }
 
-        track.getContributions().clear();
-        List<ArtistProfile> contributors = artistProfileRepo.findAllById(dto.artistIds());
-        for(ArtistProfile contributor : contributors){
-            track.getContributions().add(new ArtistContribution(track, contributor));
+        for(ContributorDTO contributorDTO : dto.contributors()){
+            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
+            ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
+            track.getContributions().add(new ArtistContribution(track, contributor, role));
         }
 
         track.setStatus(TrackStatus.PENDING);

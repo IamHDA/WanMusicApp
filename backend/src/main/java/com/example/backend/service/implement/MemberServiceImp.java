@@ -62,9 +62,10 @@ public class MemberServiceImp implements MemberService {
 
         if(currentUserId.equals(memberId)){
             Optional<ArtistProfile> artistProfile = artistProfileRepo.findByMemberId(memberId);
-            if(artistProfile.isPresent()){
+            if(!artistProfile.isPresent())
+                memberProfileDTO.setArtistProfileStatus("NONE");
+            else
                 memberProfileDTO.setArtistProfileStatus(artistProfile.get().getStatus().name());
-            }
         }
 
         memberProfileDTO.setFollowedArtistCount(followerService.countFollowedArtistByUserId(memberId));

@@ -35,9 +35,10 @@ public class ArtistContribution {
     @Column(nullable = false)
     private ContributorRole role;
 
-    public ArtistContribution(Track track, ArtistProfile contributor){
+    public ArtistContribution(Track track, ArtistProfile contributor, ContributorRole role){
         this.track = track;
         this.contributor = contributor;
-
+        this.role = role;
+        this.id = new ArtistContributionId(track.getId(), contributor.getId());
     }
 }

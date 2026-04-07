@@ -13,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 @Service
@@ -37,10 +38,11 @@ public class PlaylistTrackServiceImp implements PlaylistTrackService {
         for(Long playlistId : dto.playlistId()){
             Optional<PlaylistCollaborator> collab = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(playlistId, currentMemberId);
 
-            if(collab.isEmpty())
-                throw new RuntimeException("You are not a collaborator of this playlist!");
-
             Playlist playlist = playlistRepo.findById(playlistId).orElseThrow(()-> new RuntimeException("Playlist not found!"));
+
+            if(!Objects.equals(playlist.getOwner().getId(), currentMemberId) && collab.isEmpty())
+                throw new RuntimeException("You are not a collaborator or owner of this playlist!");
+
             Track track = trackRepo.findById(dto.trackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
             Member member = memberRepo.findById(currentMemberId).orElseThrow(()-> new RuntimeException("Member not found!"));
 
@@ -53,7 +55,7 @@ public class PlaylistTrackServiceImp implements PlaylistTrackService {
             playlistTracks.add(playlistTrack);
         }
 
-        playlistTrackRepo.saveAll(playlistTracks);
+        playlistTrackRepo.saveAllAndFlush(playlistTracks);
 
         return "Track added to playlists successfully!";
     }

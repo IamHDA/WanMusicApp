@@ -1,13 +1,18 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.track.TrackCreateDraftDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
+import com.example.backend.dto.track.TrackPreviewDTO;
 import com.example.backend.dto.track.TrackSubmitDTO;
 import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
+
+import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -22,8 +27,18 @@ public class TrackController {
         return ResponseEntity.ok(s3StorageService.getGetPresignedUrl(fileName, "songs"));
     }
 
+    @GetMapping("/search")
+    public ResponseEntity<PageResponse<TrackPreviewDTO>> searchTrackAddToPlaylist(
+            @RequestParam(name = "existedTrackIds") List<Long> existedTrackIds,
+            @RequestParam(name = "keyword") String keyword,
+            @RequestParam(name = "pageNumber") int pageNumber,
+            @RequestParam(name = "pageSize") int pageSize)
+    {
+        return ResponseEntity.ok(trackService.searchTracksAddToPlaylist(existedTrackIds, keyword, pageNumber, pageSize));
+    }
+
     @PostMapping("/submitDraft")
-    public ResponseEntity<TrackDraftResponseDTO> submitDraft(@RequestBody TrackCreateDraftDTO dto){
+    public ResponseEntity<TrackDraftResponseDTO> submitDraft(@RequestBody TrackCreateDraftDTO dto) throws IOException {
         return ResponseEntity.ok(trackService.createDraft(dto));
     }
 

@@ -11,7 +11,7 @@ spring:
     password: Mobile123@
 
   jpa:
-
+    show-sql: true
     hibernate:
       ddl-auto: update
 
@@ -30,6 +30,16 @@ payos:
   client-id: ${PAYOS_CLIENT_ID:0d694f6a-6546-493d-9236-de0e088ecd5b}
   api-key: ${PAYOS_API_KEY:26fc9a3a-723e-4717-9922-fddf9ef61be6}
   checksum-key: ${PAYOS_CHECKSUM_KEY:39dcea691d19768b604ffeaf834c61c3c8710d267cb493ba2ba201728a3e9458}
+
+logging:
+  level:
+    org:
+      springframework:
+        web:
+          servlet:
+            mvc:
+              method:
+                annotation: DEBUG
 
 app:
   frontend:

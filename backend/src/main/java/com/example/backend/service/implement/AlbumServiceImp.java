@@ -17,6 +17,7 @@ import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.service.AlbumService;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.service.RedisService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,6 +38,7 @@ public class AlbumServiceImp implements AlbumService {
     private final AlbumTrackRepository albumTrackRepo;
     private final AuthenticationService authenticationService;
     private final ArtistProfileRepository artistProfileRepo;
+    private final RedisService redisService;
 
     @Override
     public PageResponse<AlbumPreviewDTO> getAlbumsByArtistId(Long artistId) {

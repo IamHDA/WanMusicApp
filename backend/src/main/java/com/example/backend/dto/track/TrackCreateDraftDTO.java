@@ -1,5 +1,7 @@
 package com.example.backend.dto.track;
 
+import com.example.backend.dto.ContributorDTO;
+
 import java.util.Set;
 
 public record TrackCreateDraftDTO (
@@ -7,6 +9,5 @@ public record TrackCreateDraftDTO (
         String trackKey,
         String thumbnailKey,
         int duration,
-        Set<Long> tagIds,
-        Set<Long> featuredArtistIds
+        Set<ContributorDTO> featuredArtistDTO
 ){}

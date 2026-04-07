@@ -56,8 +56,7 @@ public class ArtistProfile {
 
     @OneToMany(
             mappedBy = "contributor",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL
+            fetch = FetchType.LAZY
     )
     private List<ArtistContribution> contributions;
 

@@ -2,7 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.dto.CreateSubscriptionPlanRequestDTO;
 import com.example.backend.dto.SubscriptionPlanDTO;
-import com.example.backend.dto.UpdateSubscriptionPlanDTO;
+import com.example.backend.dto.subscription.UpdateSubscriptionPlanDTO;
 import com.example.backend.entity.SubscriptionPlan;
 import com.example.backend.repository.SubscriptionPlanRepository;
 import com.example.backend.service.SubscriptionPlanService;
@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

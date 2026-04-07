@@ -2,7 +2,7 @@ package com.example.backend.service;
 
 import com.example.backend.dto.CreateSubscriptionPlanRequestDTO;
 import com.example.backend.dto.SubscriptionPlanDTO;
-import com.example.backend.dto.UpdateSubscriptionPlanDTO;
+import com.example.backend.dto.subscription.UpdateSubscriptionPlanDTO;
 
 import java.util.List;
 

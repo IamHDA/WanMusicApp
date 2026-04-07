@@ -28,6 +28,7 @@ public class TagServiceImp implements TagService {
         parentTag.ifPresent(tag::setParentTags);
 
         tag.setName(dto.name());
+        tag.setDisplayName(dto.displayName());
         tag.setDescription(dto.description());
 
         return "Tag created successfully!";

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -23,9 +24,9 @@ public class Track {
     private Long id;
     @Column(length = 50, nullable = false)
     private String title;
-    @Column(name = "thumbnail_key",length = 50, nullable = false)
+    @Column(name = "thumbnail_key",length = 500, nullable = false)
     private String thumbnailKey;
-    @Column(name = "file_key", length = 50, nullable = false)
+    @Column(name = "file_key", length = 500, nullable = false)
     private String fileKey;
     @Column(nullable = false)
     private int duration;
@@ -44,7 +45,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<TrackTag> tags;
+    private List<TrackTag> tags = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -52,7 +53,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<PlaylistTrack> playlists;
+    private List<PlaylistTrack> playlists = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -60,7 +61,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<AlbumTrack> albums;
+    private List<AlbumTrack> albums = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -68,7 +69,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<ArtistContribution> contributions;
+    private List<ArtistContribution> contributions = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -76,7 +77,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<UserInteraction> interactions;
+    private List<UserInteraction> interactions = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -84,7 +85,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<PlayerState> playerStates;
+    private List<PlayerState> playerStates = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "currentTrack",
@@ -92,7 +93,7 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<JamSession> jamSessions;
+    private List<JamSession> jamSessions = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "track",
@@ -100,5 +101,5 @@ public class Track {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
-    private List<TrackFavourite> favourites;
+    private List<TrackFavourite> favourites = new ArrayList<>();
 }

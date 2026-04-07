@@ -2,7 +2,7 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.CreateSubscriptionPlanRequestDTO;
 import com.example.backend.dto.SubscriptionPlanDTO;
-import com.example.backend.dto.UpdateSubscriptionPlanDTO;
+import com.example.backend.dto.subscription.UpdateSubscriptionPlanDTO;
 import com.example.backend.service.SubscriptionPlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;

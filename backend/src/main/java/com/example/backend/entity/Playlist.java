@@ -21,7 +21,7 @@ public class Playlist {
     private Long id;
     @Column(length = 50, nullable = false)
     private String title;
-    @Column(name = "thumbnail_key", length = 50, nullable = false)
+    @Column(name = "thumbnail_key", length = 500, nullable = false)
     private String thumbnailKey;
     @Column(length = 200)
     private String description;

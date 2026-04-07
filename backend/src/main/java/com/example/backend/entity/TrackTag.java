@@ -31,5 +31,6 @@ public class TrackTag {
     public TrackTag(Track track, Tag tag){
         this.track = track;
         this.tag = tag;
+        this.id = new TrackTagId(track.getId(), tag.getId());
     }
 }
