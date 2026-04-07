@@ -39,4 +39,11 @@ public abstract class ArtistProfileMapper {
         if(coverKey == null) return null;
         return s3StorageService.getGetPresignedUrl(coverKey, "covers");
     }
+
+    @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
+    public abstract AdminArtistProfilePreviewDTO toAdminPreviewDTO(ArtistProfile artistProfile);
+
+    @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
+    @Mapping(source = "coverKey", target = "coverUrl", qualifiedByName = "mapCoverKeyToUrl")
+    public abstract AdminArtistProfileDTO toAdminDetailDTO(ArtistProfile artistProfile);
 }
