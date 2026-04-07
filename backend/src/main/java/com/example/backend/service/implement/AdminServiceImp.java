@@ -2,7 +2,10 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.*;
 import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.dto.user.AdminArtistProfileDTO;
+import com.example.backend.dto.user.AdminArtistProfilePreviewDTO;
 import com.example.backend.entity.*;
+import com.example.backend.mapper.ArtistProfileMapper;
 import com.example.backend.repository.AlbumRepository;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TrackRepository;
@@ -14,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +27,7 @@ public class AdminServiceImp implements AdminService {
     private final AlbumRepository albumRepo;
     private final TrackRepository trackRepo;
     private final NotificationService notificationService;
+    private final ArtistProfileMapper artistProfileMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -115,5 +120,20 @@ public class AdminServiceImp implements AdminService {
         trackRepo.saveAll(tracks);
         albumRepo.delete(album);
         return "Rejected album request successfully!";
+    }
+
+    @Override
+    public List<AdminArtistProfilePreviewDTO> getAllPendingArtistProfile() {
+        return artistProfileRepo.findByStatus(ArtistProfileStatus.PENDING)
+                .stream()
+                .map(artistProfileMapper::toAdminPreviewDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public AdminArtistProfileDTO getArtistProfileDetail(Long id) {
+        ArtistProfile profile = artistProfileRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("ArtistProfile not found"));
+        return artistProfileMapper.toAdminDetailDTO(profile);
     }
 }

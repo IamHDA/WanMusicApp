@@ -1,9 +1,6 @@
 package com.example.backend.mapper;
 
-import com.example.backend.dto.user.ArtistProfileDTO;
-import com.example.backend.dto.user.ArtistProfilePreviewDTO;
-import com.example.backend.dto.user.UserPreviewDTO;
-import com.example.backend.dto.user.TrackContributorDTO;
+import com.example.backend.dto.user.*;
 import com.example.backend.entity.ArtistProfile;
 import com.example.backend.service.S3StorageService;
 import org.mapstruct.Mapper;
@@ -40,4 +37,11 @@ public abstract class ArtistProfileMapper {
         if(coverKey == null) return null;
         return s3StorageService.getGetPresignedUrl(coverKey, "covers");
     }
+
+    @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
+    public abstract AdminArtistProfilePreviewDTO toAdminPreviewDTO(ArtistProfile artistProfile);
+
+    @Mapping(source = "avatarKey", target = "avatarUrl", qualifiedByName = "mapAvatarKeyToUrl")
+    @Mapping(source = "coverKey", target = "coverUrl", qualifiedByName = "mapCoverKeyToUrl")
+    public abstract AdminArtistProfileDTO toAdminDetailDTO(ArtistProfile artistProfile);
 }

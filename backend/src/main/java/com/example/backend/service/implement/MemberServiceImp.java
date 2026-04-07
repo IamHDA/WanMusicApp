@@ -30,7 +30,6 @@ public class MemberServiceImp implements MemberService {
     private final FriendshipService friendshipService;
     private final FriendUtil friendUtil;
     private final S3StorageService s3StorageService;
-    private final ArtistProfileRepository artistProfileRepo;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -63,7 +62,9 @@ public class MemberServiceImp implements MemberService {
 
         if(currentUserId.equals(memberId)){
             Optional<ArtistProfile> artistProfile = artistProfileRepo.findByMemberId(memberId);
-            memberProfileDTO.setArtist(artistProfile.isPresent());
+            if(artistProfile.isPresent()){
+                memberProfileDTO.setArtistProfileStatus(artistProfile.get().getStatus().name());
+            }
         }
 
         memberProfileDTO.setFollowedArtistCount(followerService.countFollowedArtistByUserId(memberId));
