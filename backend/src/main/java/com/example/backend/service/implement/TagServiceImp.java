@@ -21,15 +21,18 @@ public class TagServiceImp implements TagService {
     private final TagMapper tagMapper;
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String createTag(CreateTagRequestDTO dto) {
         Tag tag = new Tag();
-        Optional<Tag> parentTag = tagRepo.findById(dto.parentTagId());
-
-        parentTag.ifPresent(tag::setParentTags);
+        if (dto.parentTagId() != null && dto.parentTagId() != 0) {
+            Optional<Tag> parentTag = tagRepo.findById(dto.parentTagId());
+            parentTag.ifPresent(tag::setParentTags);
+        }
 
         tag.setName(dto.name());
         tag.setDisplayName(dto.displayName());
         tag.setDescription(dto.description());
+        tagRepo.save(tag);
 
         return "Tag created successfully!";
     }
@@ -46,5 +49,34 @@ public class TagServiceImp implements TagService {
     public String deleteTag(Long tagId) {
         tagRepo.deleteById(tagId);
         return "Tag deleted successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String updateTag(Long id, CreateTagRequestDTO dto) {
+        Tag tag = tagRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tag not found!"));
+
+        tag.setName(dto.name());
+        tag.setDisplayName(dto.displayName());
+        tag.setDescription(dto.description());
+
+        if (dto.parentTagId() != null && dto.parentTagId() != 0) {
+            Optional<Tag> parentTag = tagRepo.findById(dto.parentTagId());
+            parentTag.ifPresent(tag::setParentTags);
+        } else {
+            tag.setParentTags(null); // Fix lỗi không xoá được Parent Tag (update không ăn)
+        }
+        tagRepo.save(tag);
+
+        return "Tag updated successfully!";
+    }
+
+    @Override
+    public TagDTO getTag(Long id) {
+        Tag tag = tagRepo.findById(id)
+                .orElseThrow(() -> new RuntimeException("Tag not found!"));
+
+        return tagMapper.toDTO(tag);
     }
 }

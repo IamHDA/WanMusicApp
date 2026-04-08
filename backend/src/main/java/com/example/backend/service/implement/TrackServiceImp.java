@@ -11,6 +11,7 @@ import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TrackRepository;
+import com.example.backend.service.AuthenticationService;
 import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
@@ -45,6 +46,7 @@ public class TrackServiceImp implements TrackService {
     private final TrackMapper trackMapper;
     private final PageMapper pageMapper;
     private final S3StorageService s3StorageService;
+    private final AuthenticationService authenticationService;
 
     @Override
     public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
@@ -64,46 +66,57 @@ public class TrackServiceImp implements TrackService {
 
         trackRepo.save(track);
 
-        HttpClient jdkHttpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .build();
+        List<String> predictedTags = new ArrayList<>();
+        try{
+            HttpClient jdkHttpClient = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_1_1)
+                    .build();
 
-        WebClient webClient = WebClient.builder()
-                .clientConnector(new JdkClientHttpConnector(jdkHttpClient))
-                .baseUrl("http://localhost:1111")
-                .build();
+            WebClient webClient = WebClient.builder()
+                    .clientConnector(new JdkClientHttpConnector(jdkHttpClient))
+                    .baseUrl("http://localhost:1111")
+                    .build();
 
-        InputStream stream = s3StorageService.getFile(track.getFileKey(), "songs");
-        byte[] fileBytes = stream.readAllBytes();
+            InputStream stream = s3StorageService.getFile(track.getFileKey(), "songs");
+            byte[] fileBytes = stream.readAllBytes();
 
-        String fileNameWithExt = track.getFileKey();
-        if (!fileNameWithExt.contains(".")) {
-            fileNameWithExt += ".mp3";
-        }
-        final String finalFileName = fileNameWithExt;
-
-        ByteArrayResource resource = new ByteArrayResource(fileBytes) {
-            @Override
-            public String getFilename() {
-                return finalFileName;
+            String fileNameWithExt = track.getFileKey();
+            if (!fileNameWithExt.contains(".")) {
+                fileNameWithExt += ".mp3";
             }
-        };
+            final String finalFileName = fileNameWithExt;
 
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", resource)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
-                .contentType(MediaType.parseMediaType("audio/mpeg"));
+            ByteArrayResource resource = new ByteArrayResource(fileBytes) {
+                @Override
+                public String getFilename() {
+                    return finalFileName;
+                }
+            };
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            builder.part("file", resource)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
+                    .contentType(MediaType.parseMediaType("audio/mpeg"));
+            // Gọi AI Service
+            predictedTags = webClient.post()
+                    .uri("/predict")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
+                    .block();
 
-        List<String> predictedTags = webClient.post()
-                .uri("/predict")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(builder.build()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
-                .block();
+            if (predictedTags != null) {
+                System.out.println("AI Predicted Tags: " + String.join(", ", predictedTags));
+            } else {
+                predictedTags = new ArrayList<>(); // Đảm bảo không bị null
+            }
 
-        for(String tag : predictedTags){
-            System.out.println(tag);
+        } catch (Exception e) {
+            // Log lại lỗi nhưng KHÔNG NÉM RA (throw) để luồng tiếp tục chạy
+            System.err.println("[CẢNH BÁO] Không thể kết nối đến AI Service (http://localhost:1111) hoặc quá trình dự đoán thất bại.");
+            System.err.println("Lý do: " + e.getMessage());
+            System.err.println("-> Bỏ qua gán nhãn tự động, tiếp tục lưu nháp Track.");
+            predictedTags = new ArrayList<>(); // Gán rỗng để chạy tiếp
         }
 
         List<TrackTag> tags = tagRepo.findByNameIn(predictedTags)
@@ -115,16 +128,23 @@ public class TrackServiceImp implements TrackService {
                 .collect(Collectors.toList());
 
         List<ArtistContribution> contributions = new ArrayList<>();
+        
+        // Gán tự động Nghệ sĩ đang đăng nhập là OWNER 
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
+                .orElseThrow(()-> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được tạo nháp!"));
+        contributions.add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
 
-        for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
-            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
-            ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
-            contributions.add(new ArtistContribution(track, contributor, role));
+        if (dto.featuredArtistDTO() != null) {
+            for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
+                ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId())
+                        .orElseThrow(()-> new RuntimeException("Artist not found for draft ID: " + contributorDTO.getId()));
+                ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
+                contributions.add(new ArtistContribution(track, contributor, role));
+            }
         }
-
         track.setTags(tags);
         track.setContributions(contributions);
-
         trackRepo.save(track);
 
         return trackMapper.toTrackDraftResponse(track);
@@ -161,8 +181,15 @@ public class TrackServiceImp implements TrackService {
             track.getTags().add(new TrackTag(track, tag));
         }
 
+        // Ép Owner luôn có
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
+                .orElseThrow(()-> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được submit track!"));
+        track.getContributions().add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
+
         for(ContributorDTO contributorDTO : dto.contributors()){
-            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
+            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId())
+                    .orElseThrow(()-> new RuntimeException("Artist ID không tồn tại trên hệ thống: " + contributorDTO.getId() + ". Vui lòng kiểm tra lại Dữ liệu Frontend truyền lên !"));
             ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
             track.getContributions().add(new ArtistContribution(track, contributor, role));
         }
