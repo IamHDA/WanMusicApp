@@ -4,6 +4,7 @@ import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.playlist.SearchTrackRequestDTO;
 import com.example.backend.dto.track.*;
+import com.example.backend.dto.user.ArtistDashboardDTO;
 
 import java.io.IOException;
 import java.util.List;
@@ -16,4 +17,5 @@ public interface TrackService {
     String updateTrackStatus(UpdateTrackStatusDTO dto);
     String submitTrack(TrackSubmitDTO dto);
     String deleteTrack(Long trackId);
+    ArtistDashboardDTO getArtistDashboard();
 }

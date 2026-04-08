@@ -5,6 +5,7 @@ import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.ContributorDTO;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.track.*;
+import com.example.backend.dto.user.ArtistDashboardDTO;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.PageMapper;
 import com.example.backend.mapper.TrackMapper;
@@ -204,5 +205,26 @@ public class TrackServiceImp implements TrackService {
     public String deleteTrack(Long trackId) {
         trackRepo.deleteById(trackId);
         return "Track deleted successfully!";
+    }
+
+    @Override
+    public ArtistDashboardDTO getArtistDashboard() {
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
+                .orElseThrow(()-> new RuntimeException("Bạn không phải Artist!"));
+        
+        List<Track> tracks = trackRepo.findTracksByOwnerId(ownerProfile.getId());
+        List<TrackArtistDTO> trackDTOs = tracks.stream().map(t -> new TrackArtistDTO(
+                t.getId(),
+                t.getTitle(),
+                t.getThumbnailKey() != null ? s3StorageService.getGetPresignedUrl(t.getThumbnailKey(), "thumbnails") : null,
+                t.getDuration(),
+                t.getStatus().name()
+        )).toList();
+        
+        long totalFans = ownerProfile.getFollowers() != null ? ownerProfile.getFollowers().size() : 0;
+        long totalDrops = tracks.size();
+        
+        return new ArtistDashboardDTO(totalFans, totalDrops, trackDTOs);
     }
 }
