@@ -38,7 +38,7 @@ public class PlaylistServiceImp implements PlaylistService {
 
     @Override
     public List<PlaylistPreviewDTO> getPlaylistsByOwnerId(Long ownerId) {
-        return playlistMapper.toPlaylistPreviewDTOList(playlistRepo.findAllByOwnerId(ownerId).orElseThrow(()-> new RuntimeException("Playlist not found!")));
+        return playlistMapper.toPlaylistPreviewDTOList(playlistRepo.findMemberPlaylists(ownerId).orElseThrow(()-> new RuntimeException("Playlist not found!")));
     }
 
     @Override

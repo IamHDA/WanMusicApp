@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
 import java.util.Set;
 
 @Entity
@@ -22,7 +23,7 @@ public class PlaylistCollaborator {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "collaborator_permission", nullable = false)
-    private Set<CollaboratorPermission> collabPermission;
+    private Set<CollaboratorPermission> collabPermission = new HashSet<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @MapsId("playlistId")
@@ -37,5 +38,7 @@ public class PlaylistCollaborator {
     public PlaylistCollaborator(Playlist playlist, Member collaborator){
         this.playlist = playlist;
         this.collaborator = collaborator;
+        this.id = new PlaylistCollabId(playlist.getId(), collaborator.getId());
+        collabPermission.add(CollaboratorPermission.ADD_TRACK);
     }
 }

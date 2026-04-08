@@ -20,8 +20,6 @@ import java.time.LocalDate;
 @RequiredArgsConstructor
 public class SubscriptionServiceImp implements SubscriptionService {
     private final SubscriptionRepository subscriptionRepo;
-    private final MemberRepository memberRepo;
-    private final SubscriptionPlanRepository planRepo;
     private final AuthenticationService authenticationService;
 
 

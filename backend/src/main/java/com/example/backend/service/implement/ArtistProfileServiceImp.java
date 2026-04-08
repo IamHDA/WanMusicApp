@@ -9,10 +9,8 @@ import com.example.backend.entity.Member;
 import com.example.backend.mapper.ArtistProfileMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.MemberRepository;
-import com.example.backend.service.AlbumService;
-import com.example.backend.service.ArtistProfileService;
-import com.example.backend.service.AuthenticationService;
-import com.example.backend.service.S3StorageService;
+import com.example.backend.service.*;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,12 +28,22 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     private final MemberRepository memberRepo;
     private final AuthenticationService authenticationService;
     private final S3StorageService s3StorageService;
+    private final RedisService redisService;
+    private final ObjectMapper objectMapper;
 
     @Override
     public ArtistProfileDTO getProfile(Long artistId) {
+        String key = "/artist/profile/" + artistId;
+        ArtistProfileDTO dto = null;
+        if (redisService.hasKey(key))
+            return objectMapper.convertValue(redisService.get(key), ArtistProfileDTO.class);
+
         ArtistProfile profile = artistProfileRepo.findById(artistId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
-        ArtistProfileDTO dto = artistProfileMapper.toArtistProfileDTO(profile);
+        dto = artistProfileMapper.toArtistProfileDTO(profile);
         dto.setAlbums(albumService.getAlbumsByArtistId(artistId));
+
+        redisService.save(key, dto, 60);
+
         return dto;
     }
 

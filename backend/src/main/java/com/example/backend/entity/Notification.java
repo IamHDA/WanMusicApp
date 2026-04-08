@@ -25,7 +25,7 @@ public class Notification {
     @Column(length = 50, nullable = false)
     private String title;
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, length = 30)
     private NotificationType type;
     @Column(name = "is_read", nullable = false)
     private boolean isRead;

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JamSessionRepository extends JpaRepository <JamSession, Long>{
+    JamSession findBySessionCode(String s);
 }

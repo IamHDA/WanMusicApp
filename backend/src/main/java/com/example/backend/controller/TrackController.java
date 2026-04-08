@@ -29,7 +29,7 @@ public class TrackController {
 
     @GetMapping("/search")
     public ResponseEntity<PageResponse<TrackPreviewDTO>> searchTrackAddToPlaylist(
-            @RequestParam(name = "existedTrackIds") List<Long> existedTrackIds,
+            @RequestParam(name = "existedTrackIds", required = false) List<Long> existedTrackIds,
             @RequestParam(name = "keyword") String keyword,
             @RequestParam(name = "pageNumber") int pageNumber,
             @RequestParam(name = "pageSize") int pageSize)

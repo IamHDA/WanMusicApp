@@ -6,4 +6,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface JamParticipantRepository extends JpaRepository <JamParticipant, Long>{
+
+    void deleteBySession_IdAndParticipant_Id(Long jamSessionId, Long memberId);
+
 }

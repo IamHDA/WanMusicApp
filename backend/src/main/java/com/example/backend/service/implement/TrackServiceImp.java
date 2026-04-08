@@ -132,7 +132,7 @@ public class TrackServiceImp implements TrackService {
 
     @Override
     public PageResponse<TrackPreviewDTO> searchTracksAddToPlaylist(List<Long> existedTrackIds, String keyword, int index, int size) {
-        Page<Track> foundedTracks = trackRepo.findAllByIdNotInAndTitleContainingIgnoreCase(existedTrackIds, keyword, PageRequest.of(index, size));
+        Page<Track> foundedTracks = trackRepo.search(existedTrackIds, keyword, PageRequest.of(index - 1, size));
         return pageMapper.toPageResponse(foundedTracks, trackMapper::toTrackPreviewDTO);
     }
 

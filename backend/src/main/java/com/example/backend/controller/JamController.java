@@ -1,7 +1,9 @@
 package com.example.backend.controller;
 
-import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
+import com.example.backend.dto.CreateJamInvitationRequestDTO;
+import com.example.backend.dto.jam.JamParticipantRequestDTO;
 import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
+import com.example.backend.dto.jam.JamDTO;
 import com.example.backend.dto.jam.UpdateJamSessionRequestDTO;
 import com.example.backend.service.JamParticipantService;
 import com.example.backend.service.JamSessionService;
@@ -18,13 +20,28 @@ public class JamController {
     private final JamParticipantService jamParticipantService;
 
     @PostMapping
-    public ResponseEntity<String> createJamSession(@RequestBody CreateJamSessionRequestDTO dto){
+    public ResponseEntity<JamDTO> createJamSession(@RequestBody CreateJamSessionRequestDTO dto){
         return ResponseEntity.ok(jamSessionService.createJamSession(dto));
     }
 
-    @PutMapping("/join")
-    public ResponseEntity<String> joinJamSession(@RequestBody AcceptInvitationRequestDTO dto){
-        return ResponseEntity.ok(jamParticipantService.joinJam(dto));
+    @PostMapping("/invite")
+    public ResponseEntity<String> inviteToJamSession(@RequestBody CreateJamInvitationRequestDTO dto){
+        return ResponseEntity.ok(jamParticipantService.inviteMember(dto));
+    }
+
+    @PutMapping("/joinById")
+    public ResponseEntity<String> joinJamSessionById(@RequestBody JamParticipantRequestDTO dto){
+        return ResponseEntity.ok(jamParticipantService.joinJamById(dto));
+    }
+
+    @PutMapping("/joinByCode")
+    public ResponseEntity<String> joinJamSessionByCode(@RequestBody JamParticipantRequestDTO dto){
+        return ResponseEntity.ok(jamParticipantService.joinJamByCode(dto));
+    }
+
+    @PutMapping("/leave")
+    public ResponseEntity<String> leaveJamSession(@RequestBody JamParticipantRequestDTO dto){
+        return ResponseEntity.ok(jamParticipantService.leaveJam(dto));
     }
 
     @PutMapping("/update")

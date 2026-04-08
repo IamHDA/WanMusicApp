@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
+import com.example.backend.dto.jam.JamDTO;
 import com.example.backend.dto.jam.UpdateJamSessionRequestDTO;
 import com.example.backend.entity.JamSession;
 import com.example.backend.repository.JamSessionRepository;
@@ -23,15 +24,20 @@ public class JamSessionServiceImp implements JamSessionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String createJamSession(CreateJamSessionRequestDTO dto) {
+    public JamDTO createJamSession(CreateJamSessionRequestDTO dto) {
         JamSession jamSession = new JamSession();
         jamSession.setSessionCode(UUID.randomUUID().toString());
         jamSession.setOwner(memberRepo.findById(authenticationService.getCurrentMemberId()).get());
         jamSession.setSize(dto.getSize());
-        jamSession.setPublic(dto.isPrivate());
-        jamSessionRepo.save(jamSession);
+        jamSession.setPublic(!dto.isPrivate());
 
-        return "Created jam session successfully!";
+        jamSession = jamSessionRepo.save(jamSession);
+
+        JamDTO jamDTO = new JamDTO();
+        jamDTO.setId(jamSession.getId());
+        jamDTO.setCode(jamSession.getSessionCode());
+
+        return jamDTO;
     }
 
     @Override

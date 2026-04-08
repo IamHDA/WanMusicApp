@@ -3,21 +3,28 @@ package com.example.backend.service.implement;
 import com.example.backend.Enum.InteractionType;
 import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CreateJamNotificationDTO;
+import com.example.backend.dto.PageResponse;
+import com.example.backend.dto.jam.GetJamNotificationRequestDTO;
 import com.example.backend.dto.jam.JamNotificationDTO;
 import com.example.backend.entity.JamNotification;
 import com.example.backend.entity.JamSession;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Track;
+import com.example.backend.mapper.JamNotificationMapper;
+import com.example.backend.mapper.PageMapper;
 import com.example.backend.repository.JamNotificationRepository;
 import com.example.backend.repository.JamSessionRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.service.JamNotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -30,6 +37,8 @@ public class JamNotificationServiceImp implements JamNotificationService {
     private final JamSessionRepository jamSessionRepo;
     private final MemberRepository memberRepo;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final PageMapper pageMapper;
+    private final JamNotificationMapper jamNotificationMapper;
 
     @Override
     public void sendJamNotification(CreateJamNotificationDTO request) {
@@ -70,6 +79,14 @@ public class JamNotificationServiceImp implements JamNotificationService {
         );
 
         simpMessagingTemplate.convertAndSend("/jam/notification" + jamSession.get().getId(), jamNotificationDTO);
+    }
+
+    @Override
+    public PageResponse<JamNotificationDTO> getJamNotifications(GetJamNotificationRequestDTO dto) {
+        return pageMapper.toPageResponse(jamNotificationRepo.findByJamSessionId(
+                dto.jamId(),
+                PageRequest.of(dto.index() - 1, dto.size())
+        ), jamNotificationMapper::toDTO);
     }
 
     private String formatSecondsToMMSS(int totalSeconds) {

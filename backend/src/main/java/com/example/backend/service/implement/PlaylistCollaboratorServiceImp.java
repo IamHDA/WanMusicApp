@@ -40,11 +40,9 @@ public class PlaylistCollaboratorServiceImp implements PlaylistCollaboratorServi
         String currentMemberName = authenticationService.getCurrentMemberName();
 
         for(Long userId : dto.userIds()) {
-            PlaylistCollaborator playlistCollaborator = new PlaylistCollaborator();
             Member member = memberRepo.findById(userId).orElseThrow(()-> new RuntimeException("Member not found!"));
-
-            playlistCollaborator.setPlaylist(playlist);
-            playlistCollaborator.setCollaborator(member);
+            PlaylistCollaborator playlistCollaborator = new PlaylistCollaborator(playlist, member);
+            playlistCollaborators.add(playlistCollaborator);
 
             CreateNotificationDTO notificationDTO = new CreateNotificationDTO();
             notificationDTO.setNotificationType(NotificationType.PLAYLIST_COLLABORATION);
@@ -55,7 +53,7 @@ public class PlaylistCollaboratorServiceImp implements PlaylistCollaboratorServi
             createNotificationDTOS.add(notificationDTO);
         }
 
-        playlistCollaboratorRepo.saveAll(playlistCollaborators);
+        playlistCollaboratorRepo.saveAllAndFlush(playlistCollaborators);
 
         for(CreateNotificationDTO notificationDTO : createNotificationDTOS)
             notificationService.sendNotification(notificationDTO);

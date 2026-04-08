@@ -66,9 +66,10 @@ public class PlaylistTrackServiceImp implements PlaylistTrackService {
         Long currentMemberId = authenticationService.getCurrentMemberId();
 
         for(Long playlistId : dto.playlistId()){
+            Playlist playlist = playlistRepo.findById(playlistId).orElseThrow(()-> new RuntimeException("Playlist not found!"));
             Optional<PlaylistCollaborator> collab = playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(dto.playlistId().getFirst(), currentMemberId);
 
-            if(collab.isEmpty())
+            if(!Objects.equals(playlist.getOwner().getId(), currentMemberId) && collab.isEmpty())
                 throw new RuntimeException("You are not a collaborator of this playlist!");
 
             playlistTrackRepo.deleteByPlaylistIdAndTrackId(playlistId, dto.trackId());
