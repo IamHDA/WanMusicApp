@@ -5,6 +5,7 @@ import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.MemberUpdateProfileDTO;
 import com.example.backend.dto.user.UpdateArtistProfileRequestDTO;
 import com.example.backend.service.ArtistProfileService;
+import com.example.backend.service.AuthenticationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,11 @@ public class ArtistProfileController {
     @GetMapping("/{id}")
     public ResponseEntity<ArtistProfileDTO> getProfile(@PathVariable Long id){
         return ResponseEntity.ok(artistProfileService.getProfile(id));
+    }
+
+    @GetMapping("/myProfile")
+    public ResponseEntity<ArtistProfileDTO> getMyProfile(){
+        return ResponseEntity.ok(artistProfileService.getMyProfile());
     }
 
     @PostMapping

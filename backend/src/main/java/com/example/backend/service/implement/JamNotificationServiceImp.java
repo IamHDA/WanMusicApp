@@ -44,7 +44,9 @@ public class JamNotificationServiceImp implements JamNotificationService {
     public void sendJamNotification(CreateJamNotificationDTO request) {
         Optional<JamSession> jamSession = jamSessionRepo.findById(request.getJamJd());
         Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
-        Track track = trackRepo.findById(request.getTrackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
+        Track track = null;
+        if(!request.getNotificationType().equals(NotificationType.JAM_JOIN))
+            track = trackRepo.findById(request.getTrackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
         JamNotification jamNotification = new JamNotification();
 
         if(jamSession.isEmpty())
@@ -64,7 +66,6 @@ public class JamNotificationServiceImp implements JamNotificationService {
         }else if(request.getNotificationType().equals(NotificationType.JAM_JOIN))
             jamNotification.setMessage(member.getFullName() + " joined the jam");
 
-
         jamNotification.setJamSession(jamSession.get());
         jamNotification.setType(request.getNotificationType());
         jamNotification.setCreatedAt(LocalDateTime.now());
@@ -78,7 +79,7 @@ public class JamNotificationServiceImp implements JamNotificationService {
                 jamNotification.getCreatedAt()
         );
 
-        simpMessagingTemplate.convertAndSend("/jam/notification" + jamSession.get().getId(), jamNotificationDTO);
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamSession.get().getId(), jamNotificationDTO);
     }
 
     @Override

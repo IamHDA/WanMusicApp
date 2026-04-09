@@ -9,4 +9,5 @@ public interface JamParticipantRepository extends JpaRepository <JamParticipant,
 
     void deleteBySession_IdAndParticipant_Id(Long jamSessionId, Long memberId);
 
+    void deleteBySession_Id(Long jamSessionId);
 }

@@ -30,12 +30,12 @@ public class JamController {
     }
 
     @PutMapping("/joinById")
-    public ResponseEntity<String> joinJamSessionById(@RequestBody JamParticipantRequestDTO dto){
+    public ResponseEntity<Long> joinJamSessionById(@RequestBody JamParticipantRequestDTO dto){
         return ResponseEntity.ok(jamParticipantService.joinJamById(dto));
     }
 
     @PutMapping("/joinByCode")
-    public ResponseEntity<String> joinJamSessionByCode(@RequestBody JamParticipantRequestDTO dto){
+    public ResponseEntity<Long> joinJamSessionByCode(@RequestBody JamParticipantRequestDTO dto){
         return ResponseEntity.ok(jamParticipantService.joinJamByCode(dto));
     }
 

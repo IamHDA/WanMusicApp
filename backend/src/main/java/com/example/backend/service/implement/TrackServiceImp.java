@@ -48,7 +48,7 @@ public class TrackServiceImp implements TrackService {
 
     @Override
     public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
-        return pageMapper.toPageResponse(trackRepo.findAllByStatus(status, PageRequest.of(index, size)), trackMapper::toTrackAdminReviewDTO);
+        return pageMapper.toPageResponse(trackRepo.findAllByStatusAndNotInAlbum(status, PageRequest.of(index, size)), trackMapper::toTrackAdminReviewDTO);
     }
 
     @Override

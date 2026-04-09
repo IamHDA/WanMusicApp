@@ -16,4 +16,6 @@ public interface JamNotificationRepository extends JpaRepository <JamNotificatio
             "ORDER BY jn.createdAt DESC"
     )
     Page<JamNotification> findByJamSessionId(@Param("jamSessionId") Long jamSessionId, Pageable pageable);
+
+    void deleteByJamSession_Id(Long jamSessionId);
 }

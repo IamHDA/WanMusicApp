@@ -12,8 +12,5 @@ public interface PlaylistTrackRepository extends JpaRepository<PlaylistTrack, Lo
     @Query("SELECT pt.track FROM PlaylistTrack pt WHERE pt.playlist.id = :playlistId")
     List<Track> findAllTrackByPlaylistId(@Param("playlistId") Long playlistId);
 
-    PlaylistTrack findByPlaylistId(Long playlistId);
-    PlaylistTrack findByPlaylistIdAndTrackId(Long playlistId, Long trackId);
-
     void deleteByPlaylistIdAndTrackId(Long playlistId, Long trackId);
 }

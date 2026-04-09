@@ -33,7 +33,7 @@ public class JamParticipantServiceImp implements JamParticipantService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String joinJamById(JamParticipantRequestDTO request) {
+    public Long joinJamById(JamParticipantRequestDTO request) {
         JamParticipant participant = new JamParticipant();
         Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).get();
         JamSession jamSession = jamSessionRepo.findById(request.jamSessionId()).get();
@@ -51,7 +51,7 @@ public class JamParticipantServiceImp implements JamParticipantService {
 
         jamNotificationService.sendJamNotification(dto);
 
-        return "Joined jam session successfully!";
+        return jamSession.getId();
     }
 
     @Override
@@ -80,7 +80,7 @@ public class JamParticipantServiceImp implements JamParticipantService {
     }
 
     @Override
-    public String joinJamByCode(JamParticipantRequestDTO requestDTO) {
+    public Long joinJamByCode(JamParticipantRequestDTO requestDTO) {
         JamParticipant participant = new JamParticipant();
         Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).get();
         JamSession jamSession = jamSessionRepo.findBySessionCode(requestDTO.jamSessionCode());
@@ -92,12 +92,12 @@ public class JamParticipantServiceImp implements JamParticipantService {
         jamParticipantRepo.save(participant);
 
         CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
-        dto.setJamJd(requestDTO.jamSessionId());
+        dto.setJamJd( jamSession.getId());
         dto.setNotificationType(NotificationType.JAM_JOIN);
         dto.setUsername(member.getFullName());
 
         jamNotificationService.sendJamNotification(dto);
 
-        return "Joined jam session successfully!";
+        return jamSession.getId();
     }
 }

@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.schedule;
 
 import com.example.backend.Enum.SubscriptionType;
 import com.example.backend.entity.Member;
@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SubscriptionCleanupService {
+public class SubscriptionCleanupSchedule {
     private final SubscriptionRepository subscriptionRepo;
     private final MemberRepository memberRepo;
 

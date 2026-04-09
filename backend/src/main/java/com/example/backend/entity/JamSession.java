@@ -28,9 +28,7 @@ public class JamSession {
     private int size;
 
     @OneToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "owner_id")
     private Member owner;
@@ -46,11 +44,15 @@ public class JamSession {
 
     @OneToMany(
             mappedBy = "jamSession",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
-    private List<JamNotification> notifications;
+    private List<JamNotification> jamNotifications;
+
+    @OneToMany(
+            mappedBy = "jamSession",
+            fetch = FetchType.LAZY
+    )
+    private List<Notification> notificationsToMember = new ArrayList<>();
 
     @ManyToOne(
             fetch = FetchType.LAZY

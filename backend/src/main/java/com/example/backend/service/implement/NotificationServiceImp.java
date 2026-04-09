@@ -5,6 +5,7 @@ import com.example.backend.dto.CreateNotificationDTO;
 import com.example.backend.dto.NotificationDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Notification;
+import com.example.backend.mapper.NotificationMapper;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.repository.NotificationRepository;
 import com.example.backend.repository.TrackRepository;
@@ -15,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +25,7 @@ public class NotificationServiceImp implements NotificationService {
     private final MemberRepository memberRepo;
     private final NotificationRepository notificationRepo;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationMapper notificationMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -72,5 +75,13 @@ public class NotificationServiceImp implements NotificationService {
         notificationRepo.save(notification);
 
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(dto.getTargetId()), "/queue/notice", notificationDTO);
+    }
+
+    @Override
+    public List<NotificationDTO> getNotifications(Long receiverId) {
+        return notificationRepo.findByReceiver_IdOrderByCreatedAtDesc(receiverId)
+                .stream()
+                .map(notificationMapper::toDTO)
+                .toList();
     }
 }

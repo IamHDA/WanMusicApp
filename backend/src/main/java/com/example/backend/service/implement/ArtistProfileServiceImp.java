@@ -1,6 +1,7 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ArtistProfileStatus;
+import com.example.backend.dto.album.GetAlbumsPaginationRequest;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.UpdateArtistProfileRequestDTO;
@@ -29,18 +30,36 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     private final AuthenticationService authenticationService;
     private final S3StorageService s3StorageService;
     private final RedisService redisService;
-    private final ObjectMapper objectMapper;
 
     @Override
     public ArtistProfileDTO getProfile(Long artistId) {
         String key = "/artist/profile/" + artistId;
         ArtistProfileDTO dto = null;
         if (redisService.hasKey(key))
-            return objectMapper.convertValue(redisService.get(key), ArtistProfileDTO.class);
+            return (ArtistProfileDTO) redisService.get(key);
 
         ArtistProfile profile = artistProfileRepo.findById(artistId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
         dto = artistProfileMapper.toArtistProfileDTO(profile);
-        dto.setAlbums(albumService.getAlbumsByArtistId(artistId));
+        dto.setAlbums(albumService.getAlbumsByArtistId(new GetAlbumsPaginationRequest(artistId, 1, 4)));
+
+        redisService.save(key, dto, 60);
+
+        return dto;
+    }
+
+    @Override
+    public ArtistProfileDTO getMyProfile() {
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile profile = artistProfileRepo.findByMemberId(currentUserId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+
+        Long artistId =  profile.getId();
+        String key = "/artist/myProfile/" + artistId;
+        ArtistProfileDTO dto = null;
+        if (redisService.hasKey(key))
+            return (ArtistProfileDTO) redisService.get(key);
+
+        dto = artistProfileMapper.toArtistProfileDTO(profile);
+        dto.setAlbums(albumService.getAlbumsByArtistId(new GetAlbumsPaginationRequest(artistId, 1, 4)));
 
         redisService.save(key, dto, 60);
 

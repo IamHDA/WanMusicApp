@@ -11,6 +11,7 @@ import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.service.AdminService;
 import com.example.backend.service.NotificationService;
+import com.example.backend.service.SearchCacheVersionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,12 +29,16 @@ public class AdminServiceImp implements AdminService {
     private final TrackRepository trackRepo;
     private final NotificationService notificationService;
     private final ArtistProfileMapper artistProfileMapper;
+    private final SearchCacheVersionService searchCacheVersionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String approveArtistProfileRequest(Long artistProfileId) {
         ArtistProfile profile = artistProfileRepo.findById(artistProfileId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
         profile.setStatus(ArtistProfileStatus.VERIFIED);
+
+        searchCacheVersionService.bumpArtistVersion();
+
         return "Approved artist profile request successfully!";
     }
 
@@ -75,10 +80,13 @@ public class AdminServiceImp implements AdminService {
             notificationService.sendNotification(notificationDTO);
         }
 
+        searchCacheVersionService.bumpTrackVersion();
+
         return "Track approved successfully!";
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public String rejectTrackRequest(Long trackId) {
         Track track = trackRepo.findById(trackId).orElseThrow(()-> new RuntimeException("Track not found!"));
         track.setStatus(TrackStatus.REJECTED);
@@ -100,6 +108,8 @@ public class AdminServiceImp implements AdminService {
             tracks.add(albumTrack.getTrack());
         }
         trackRepo.saveAll(tracks);
+
+        searchCacheVersionService.bumpAlbumVersion();
 
         return "Approved album request successfully!";
     }

@@ -24,7 +24,7 @@ public class JamNotification {
     @Column(length = 100, nullable = false)
     private String message;
     @Enumerated(EnumType.STRING)
-    @Column(name = "notificationType", nullable = false)
+    @Column(name = "notification_type", nullable = false, length = 50)
     private NotificationType type;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", nullable = false)

@@ -49,6 +49,7 @@ public abstract class TrackMapper {
     @Mapping(source = "fileKey", target = "trackUrl", qualifiedByName = "mapTrackKeyToUrl")
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "mapThumbnailKeyToUrl")
     @Mapping(source = "tags", target = "tags", qualifiedByName = "mapTrackTagToTagDTO")
+    @Mapping(source = "contributions", target = "contributors", qualifiedByName = "mapTrackContributionsToNamePreview")
     public abstract TrackAdminReviewDTO toTrackAdminReviewDTO(Track track);
 
     @Named("mapTrackKeyToUrl")
@@ -74,6 +75,8 @@ public abstract class TrackMapper {
                 .map(ac -> {
                     ContributorDTO dto = artistProfileMapper.toTrackContributorDTO(ac.getContributor());
                     dto.setRole(ac.getRole().toString());
+                    System.out.println(dto.getName());
+                    System.out.println(dto.getRole());
                     return dto;
                 })
                 .toList();

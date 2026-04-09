@@ -18,5 +18,6 @@ public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
     where p.owner.id = :memberId or pc.collaborator.id = :memberId
 """)
     Optional<List<Playlist>> findMemberPlaylists(@Param("memberId") Long memberId);
+
     int countByOwnerId(Long ownerId);
 }

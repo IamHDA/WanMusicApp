@@ -1,6 +1,8 @@
 package com.example.backend.mapper;
 
 import com.example.backend.dto.ContributorDTO;
+import com.example.backend.dto.user.AdminArtistProfileDTO;
+import com.example.backend.dto.user.AdminArtistProfilePreviewDTO;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.ArtistProfilePreviewDTO;
 import com.example.backend.entity.ArtistProfile;

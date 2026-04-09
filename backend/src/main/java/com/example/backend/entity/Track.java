@@ -49,6 +49,12 @@ public class Track {
 
     @OneToMany(
             mappedBy = "track",
+            fetch = FetchType.LAZY
+    )
+    private List<Notification> notifications = new ArrayList<>();
+
+    @OneToMany(
+            mappedBy = "track",
             fetch = FetchType.LAZY,
             cascade = CascadeType.ALL,
             orphanRemoval = true
