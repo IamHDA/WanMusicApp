@@ -41,6 +41,10 @@ public class PlayerState {
     private Track track;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "jam_session_id")
+    private JamSession jamSession;
+
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "playlist_id")
     private Playlist playlist;
 

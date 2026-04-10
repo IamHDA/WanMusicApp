@@ -7,7 +7,5 @@ import com.example.backend.entity.Track;
 
 public interface UserInteractionService {
 
-    void addInteraction(Member member, Track track, InteractionType type);
-
     String addInteraction(CreateInteractionRequestDTO dto);
 }

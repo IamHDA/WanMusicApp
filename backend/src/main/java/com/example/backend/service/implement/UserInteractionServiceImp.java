@@ -26,19 +26,6 @@ public class UserInteractionServiceImp implements UserInteractionService {
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addInteraction(Member member, Track track, InteractionType type) {
-        UserInteraction interaction = new UserInteraction();
-        interaction.setMember(member);
-        interaction.setTrack(track);
-        interaction.setType(type);
-        interaction.setTime(LocalDateTime.now());
-        interaction.setDuration(0);
-
-        userInteractionRepo.save(interaction);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
     public String addInteraction(CreateInteractionRequestDTO dto) {
         UserInteraction interaction = new UserInteraction();
         Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));

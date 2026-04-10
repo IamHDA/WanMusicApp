@@ -4,6 +4,7 @@ import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CreateJamInvitationRequestDTO;
 import com.example.backend.dto.CreateJamNotificationDTO;
 import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.dto.jam.JamNotificationDTO;
 import com.example.backend.dto.jam.JamParticipantRequestDTO;
 import com.example.backend.entity.EmbeddedId.JamParticipantId;
 import com.example.backend.entity.JamParticipant;
@@ -17,6 +18,7 @@ import com.example.backend.service.JamNotificationService;
 import com.example.backend.service.JamParticipantService;
 import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +32,7 @@ public class JamParticipantServiceImp implements JamParticipantService {
     private final AuthenticationService authenticationService;
     private final MemberRepository memberRepo;
     private final NotificationService notificationService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -45,11 +48,12 @@ public class JamParticipantServiceImp implements JamParticipantService {
         jamParticipantRepo.save(participant);
 
         CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
-        dto.setJamJd(request.jamSessionId());
+        dto.setJamId(request.jamSessionId());
         dto.setNotificationType(NotificationType.JAM_JOIN);
-        dto.setUsername(member.getFullName());
 
-        jamNotificationService.sendJamNotification(dto);
+        JamNotificationDTO jamnotificationDTO = jamNotificationService.sendJamNotification(dto, member.getEmail());
+
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamnotificationDTO.jamSessionId(), jamnotificationDTO);
 
         return jamSession.getId();
     }
@@ -92,11 +96,12 @@ public class JamParticipantServiceImp implements JamParticipantService {
         jamParticipantRepo.save(participant);
 
         CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
-        dto.setJamJd( jamSession.getId());
+        dto.setJamId( jamSession.getId());
         dto.setNotificationType(NotificationType.JAM_JOIN);
-        dto.setUsername(member.getFullName());
 
-        jamNotificationService.sendJamNotification(dto);
+        JamNotificationDTO jamnotificationDTO = jamNotificationService.sendJamNotification(dto, member.getEmail());
+
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamnotificationDTO.jamSessionId(), jamnotificationDTO);
 
         return jamSession.getId();
     }

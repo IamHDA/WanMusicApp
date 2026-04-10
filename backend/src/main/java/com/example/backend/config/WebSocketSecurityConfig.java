@@ -1,7 +1,7 @@
 package com.example.backend.config;
 
 import com.example.backend.security.JwtTokenProvider;
-import com.example.backend.security.UserPrinciple;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Configuration;
@@ -14,7 +14,9 @@ import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
 import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerConfigurer;
 
@@ -48,10 +50,14 @@ public class WebSocketSecurityConfig implements WebSocketMessageBrokerConfigurer
                 String accessToken = authToken.substring(7);
                 String email = jwtTokenProvider.extractSubject(accessToken);
 
-                if(jwtTokenProvider.validateAccessToken(accessToken, userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(accessToken)))){
-                    UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(accessToken, null, userDetailsService.loadUserByUsername(jwtTokenProvider.extractSubject(accessToken)).getAuthorities());
-                    SecurityContextHolder.getContext().setAuthentication(token);
-                    accessor.setUser(token);
+                if(email != null && SecurityContextHolder.getContext().getAuthentication() == null){
+                    UserDetails userDetails = userDetailsService.loadUserByUsername(email);
+
+                    if(jwtTokenProvider.validateAccessToken(accessToken, userDetails)){
+                        UsernamePasswordAuthenticationToken token = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        SecurityContextHolder.getContext().setAuthentication(token);
+                        accessor.setUser(token);
+                    }
                 }
 
                 log.info("Connected to websocket!: " + email);

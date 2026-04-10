@@ -22,7 +22,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.security.Principal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -36,14 +38,14 @@ public class JamNotificationServiceImp implements JamNotificationService {
     private final TrackRepository trackRepo;
     private final JamSessionRepository jamSessionRepo;
     private final MemberRepository memberRepo;
-    private final SimpMessagingTemplate simpMessagingTemplate;
     private final PageMapper pageMapper;
     private final JamNotificationMapper jamNotificationMapper;
 
     @Override
-    public void sendJamNotification(CreateJamNotificationDTO request) {
-        Optional<JamSession> jamSession = jamSessionRepo.findById(request.getJamJd());
-        Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
+    @Transactional(rollbackFor = Exception.class)
+    public JamNotificationDTO sendJamNotification(CreateJamNotificationDTO request, String email) {
+        Optional<JamSession> jamSession = jamSessionRepo.findById(request.getJamId());
+        Member member = memberRepo.findByEmail(email).orElseThrow(()-> new RuntimeException("Member not found!"));
         Track track = null;
         if(!request.getNotificationType().equals(NotificationType.JAM_JOIN))
             track = trackRepo.findById(request.getTrackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
@@ -51,6 +53,8 @@ public class JamNotificationServiceImp implements JamNotificationService {
 
         if(jamSession.isEmpty())
             throw new RuntimeException("Jam session not found!");
+
+        System.out.println(member.getFullName() + " " + request.getNotificationType());
 
         if(request.getNotificationType().equals(NotificationType.JAM_INTERACTION)){
             if(request.getInteractionType().equals(InteractionType.PLAY))
@@ -73,13 +77,17 @@ public class JamNotificationServiceImp implements JamNotificationService {
         jamNotification = jamNotificationRepo.save(jamNotification);
 
         JamNotificationDTO jamNotificationDTO = new JamNotificationDTO(
+                jamSession.get().getId(),
                 jamNotification.getId(),
+                request.getTrackId(),
                 jamNotification.getMessage(),
                 jamNotification.getType(),
+                request.getInteractionType(),
+                request.getDuration(),
                 jamNotification.getCreatedAt()
         );
 
-        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamSession.get().getId(), jamNotificationDTO);
+        return jamNotificationDTO;
     }
 
     @Override
