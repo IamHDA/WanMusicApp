@@ -12,7 +12,7 @@ public interface NotificationMapper {
     @Mapping(source = "jamSession.id", target = "jamSessionId")
     @Mapping(source = "track.id", target = "trackId")
     @Mapping(source = "playlist.id", target = "playlistId")
-    @Mapping(source = "friendship.id", target = "friendRequestId")
+    @Mapping(source = "friendship.member.id", target = "friendRequestSenderId")
     NotificationDTO toDTO(Notification notification);
 
 }

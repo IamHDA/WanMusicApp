@@ -30,6 +30,7 @@ public class MemberServiceImp implements MemberService {
     private final FriendshipService friendshipService;
     private final FriendUtil friendUtil;
     private final S3StorageService s3StorageService;
+    private final CacheVersionService cacheVersionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -47,6 +48,9 @@ public class MemberServiceImp implements MemberService {
         if (dto.displayName() != null && !dto.displayName().trim().isEmpty()) {
             currentMember.setFullName(dto.displayName());
         }
+
+        cacheVersionService.bumpMemberVersion();
+
         return "Profile updated successfully!";
     }
 

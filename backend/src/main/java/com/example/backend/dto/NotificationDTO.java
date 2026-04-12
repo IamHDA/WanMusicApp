@@ -15,7 +15,7 @@ public class NotificationDTO {
     private Long jamSessionId;
     private Long trackId;
     private Long playlistId;
-    private FriendshipId friendRequestId;
+    private Long friendRequestSenderId;
     private String message;
     private NotificationType type;
     private LocalDateTime createdAt;

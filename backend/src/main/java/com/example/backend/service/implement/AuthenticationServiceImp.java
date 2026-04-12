@@ -14,6 +14,7 @@ import com.example.backend.repository.UserRepository;
 import com.example.backend.security.JwtTokenProvider;
 import com.example.backend.security.UserPrinciple;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.service.CacheVersionService;
 import com.example.backend.service.MemberService;
 import io.jsonwebtoken.ExpiredJwtException;
 import lombok.RequiredArgsConstructor;
@@ -29,6 +30,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -42,6 +44,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
     private final MemberRepository memberRepo;
     private final TokenRepository tokenRepo;
     private final PasswordEncoder passwordEncoder;
+    private final CacheVersionService cacheVersionService;
 
     @Transactional(rollbackFor = Exception.class)
     @Override
@@ -79,7 +82,7 @@ public class AuthenticationServiceImp implements AuthenticationService {
         Member member = new Member();
         member.setEmail(request.email());
         member.setPassword(passwordEncoder.encode(request.password()));
-        member.setCreatedAt(LocalDateTime.now());
+        member.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
         member.setRole(Role.USER);
         member.setSubscriptionType(SubscriptionType.FREE);
         member.setFullName(request.displayName());
@@ -94,6 +97,8 @@ public class AuthenticationServiceImp implements AuthenticationService {
         String refreshToken = jwtTokenProvider.generateRefreshToken(userDetails);
 
         saveToken(request.email(), accessToken, refreshToken);
+
+        cacheVersionService.bumpMemberVersion();
 
         return new AuthenticationResponse(member.getId(),accessToken, refreshToken, "Account created successfully!");
     }

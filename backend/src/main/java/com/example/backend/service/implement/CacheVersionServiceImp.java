@@ -13,6 +13,8 @@ public class CacheVersionServiceImp implements CacheVersionService {
     private final AtomicLong trackVersion = new AtomicLong(1);
     private final AtomicLong artistVersion = new AtomicLong(1);
     private final AtomicLong albumVersion = new AtomicLong(1);
+    private final AtomicLong friendShipVersion = new AtomicLong(1);
+    private final AtomicLong memberVersion = new AtomicLong(1);
 
     @Override
     public long getJamNotificationVersion(Long jamSessionId) {
@@ -56,5 +58,25 @@ public class CacheVersionServiceImp implements CacheVersionService {
     @Override
     public void bumpAlbumVersion() {
         albumVersion.incrementAndGet();
+    }
+
+    @Override
+    public long getMemberVersion() {
+        return memberVersion.get();
+    }
+
+    @Override
+    public void bumpMemberVersion() {
+        memberVersion.incrementAndGet();
+    }
+
+    @Override
+    public long getFriendVersion() {
+        return friendShipVersion.get();
+    }
+
+    @Override
+    public void bumpFriendVersion() {
+        friendShipVersion.incrementAndGet();
     }
 }

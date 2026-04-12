@@ -270,6 +270,8 @@ public class SearchRepository {
                     Member member = (Member) result[0];
                     Friendship friendship = result[1] != null ? (Friendship) result[1] : null;
 
+                    System.out.println("MemberId: " + member.getId() + " Friendship: " + friendship);
+
                     MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(member);
                     memberProfilePreviewDTO.setFriendStatus(friendUtil.getFriendshipStatus(friendship, currentUserId));
 

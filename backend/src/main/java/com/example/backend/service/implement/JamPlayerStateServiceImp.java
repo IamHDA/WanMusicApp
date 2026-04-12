@@ -38,6 +38,7 @@ public class JamPlayerStateServiceImp implements JamPlayerStateService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public void rejectJamMemberRequest(UpdateJamPlayerRequestDTO dto) {
         JamNotification jamNotification = jamNotificationRepo.findById(dto.jamNotificationId()).orElseThrow(() -> new RuntimeException("JamNotification not found!"));
         jamNotification.setStatus(JamInteractionStatus.REJECTED);
@@ -47,7 +48,7 @@ public class JamPlayerStateServiceImp implements JamPlayerStateService {
         response.setJamNotificationId(dto.jamNotificationId());
         response.setStatus(JamInteractionStatus.REJECTED);
 
-        simpMessagingTemplate.convertAndSend("jam/notification/" + dto.jamId(), response);
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + dto.jamId(), response);
     }
 
     @Override
@@ -63,27 +64,35 @@ public class JamPlayerStateServiceImp implements JamPlayerStateService {
 
         JamTrackPreviewDTO jamTrack = new JamTrackPreviewDTO();
 
+        boolean isPlaying = false;
+        int currentSeekPosition = 0;
+
         if(dto.interactionType().equals(InteractionType.PICK) ||
             dto.interactionType().equals(InteractionType.SKIP) ||
             dto.interactionType().equals(InteractionType.PREVIOUS)
         ){
             TrackPreviewDTO trackDTO = trackService.getTrack(dto.trackId());
             jamTrack = new JamTrackPreviewDTO(trackDTO);
-            jamTrack.setPlaying(true);
-            jamTrack.setCurrentSeekPosition(0);
+            isPlaying = true;
         }else if(dto.interactionType().equals(InteractionType.PLAY)){
             jamTrack.setId(dto.trackId());
-            jamTrack.setPlaying(true);
-            jamTrack.setCurrentSeekPosition(dto.seekPosition());
+            isPlaying = true;
+            currentSeekPosition = dto.seekPosition();
         }else if(dto.interactionType().equals(InteractionType.PAUSE)){
             jamTrack.setId(dto.trackId());
-            jamTrack.setPlaying(false);
+            isPlaying = false;
         }else if(dto.interactionType().equals(InteractionType.JUMP)){
             jamTrack.setId(dto.trackId());
-            jamTrack.setCurrentSeekPosition(dto.seekPosition());
+            isPlaying = true;
+            currentSeekPosition = dto.seekPosition();
         }
 
-        simpMessagingTemplate.convertAndSend("jam/notification/" + dto.jamId(), notificationResponse);
+        jamTrack.setCurrentSeekPosition(currentSeekPosition);
+        jamTrack.setPlaying(isPlaying);
+
+        updateJamPlayerState(dto.jamId(), currentSeekPosition, isPlaying);
+
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + dto.jamId(), notificationResponse);
         simpMessagingTemplate.convertAndSend("/jam/track/" + dto.jamId(), jamTrack);
 
     }

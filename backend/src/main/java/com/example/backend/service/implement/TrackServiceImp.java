@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -69,7 +70,7 @@ public class TrackServiceImp implements TrackService {
         track.setThumbnailKey(dto.thumbnailKey());
         track.setDuration(dto.duration());
         track.setStatus(TrackStatus.DRAFT);
-        track.setCreatedAt(LocalDateTime.now());
+        track.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
 
         trackRepo.save(track);
 

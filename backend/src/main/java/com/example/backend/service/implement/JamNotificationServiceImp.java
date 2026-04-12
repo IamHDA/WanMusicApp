@@ -26,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -68,7 +69,7 @@ public class JamNotificationServiceImp implements JamNotificationService {
             }
             else if(request.getInteractionType().equals(InteractionType.JUMP)){
                 if(isOwner) message = "Host jumped to " + request.getDuration();
-                else message = member.getFullName() + " wants to jump to " + request.getDuration();
+                else message = member.getFullName() + " wants to jump to " + formatSecondsToMMSS(request.getDuration());
             }
             else if(request.getInteractionType().equals(InteractionType.SKIP)){
                 if(isOwner) message = "Host skipped this song";
@@ -96,7 +97,7 @@ public class JamNotificationServiceImp implements JamNotificationService {
         jamNotification.setMessage(message);
         jamNotification.setJamSession(jamSession.get());
         jamNotification.setType(request.getNotificationType());
-        jamNotification.setCreatedAt(LocalDateTime.now());
+        jamNotification.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
 
         jamNotification = jamNotificationRepo.save(jamNotification);
 
@@ -136,5 +137,11 @@ public class JamNotificationServiceImp implements JamNotificationService {
         }
 
         return response;
+    }
+
+    public static String formatSecondsToMMSS(int totalSeconds) {
+        int minutes = totalSeconds / 60;
+        int seconds = totalSeconds % 60;
+        return String.format("%02d:%02d", minutes, seconds);
     }
 }

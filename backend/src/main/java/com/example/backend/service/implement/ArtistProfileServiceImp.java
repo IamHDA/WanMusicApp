@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Optional;
 
 @Service
@@ -98,7 +99,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         profile.setAvatarKey(dto.avatarKey());
         profile.setCoverKey(dto.coverKey());
         profile.setStatus(ArtistProfileStatus.PENDING);
-        profile.setCreatedAt(LocalDateTime.now());
+        profile.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
 
         artistProfileRepo.save(profile);
 

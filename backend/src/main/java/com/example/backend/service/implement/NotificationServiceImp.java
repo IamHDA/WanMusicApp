@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.List;
 
 @Service
@@ -49,7 +50,7 @@ public class NotificationServiceImp implements NotificationService {
 
             notificationDTO.setType(NotificationType.FRIEND_REQUEST);
             notificationDTO.setMessage(notification.getMessage());
-            notificationDTO.setFriendRequestId(dto.getFriendRequestId());
+            notificationDTO.setFriendRequestSenderId(dto.getFriendRequestSenderId());
         }else if(dto.getNotificationType().equals(NotificationType.PLAYLIST_COLLABORATION)){
             notification.setTitle("Playlist Collaboration");
             notification.setMessage(dto.getSenderName() + " invited you to collaborate on a playlist!");
@@ -69,7 +70,7 @@ public class NotificationServiceImp implements NotificationService {
         }
 
         notification.setReceiver(receiver);
-        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCreatedAt(LocalDateTime.now(ZoneId.of("UTC")));
         notification.setRead(false);
 
         notificationRepo.save(notification);

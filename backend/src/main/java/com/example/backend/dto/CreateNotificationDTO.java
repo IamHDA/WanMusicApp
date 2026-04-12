@@ -12,7 +12,7 @@ public class CreateNotificationDTO {
     private Long notificationId;
     private Long jamSessionId;
     private Long trackId;
-    private FriendshipId friendRequestId;
+    private Long friendRequestSenderId;
     private Long playlistId;
     private Long targetId;
     private NotificationType notificationType;

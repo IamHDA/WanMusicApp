@@ -9,4 +9,8 @@ public interface CacheVersionService {
     void bumpArtistVersion();
     long getAlbumVersion();
     void bumpAlbumVersion();
+    long getMemberVersion();
+    void bumpMemberVersion();
+    long getFriendVersion();
+    void bumpFriendVersion();
 }

@@ -26,8 +26,11 @@ public class SearchServiceImp implements SearchService {
         long trackVersion = cacheVersionService.getTrackVersion();
         long albumVersion = cacheVersionService.getAlbumVersion();
         long artistVersion = cacheVersionService.getArtistVersion();
+        long friendVersion = cacheVersionService.getFriendVersion();
+        long memberVersion = cacheVersionService.getMemberVersion();
 
         String key = "/search/vTrack" + trackVersion + "/vAlbum" + albumVersion + "/vArtist" + artistVersion +
+                "/vFriend" + friendVersion + "/vMember" + memberVersion +
                 "/" + searchRequestDTO.keyword() +
                 "/" + searchRequestDTO.type() +
                 "/" + searchRequestDTO.pageNumber() +
