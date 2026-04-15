@@ -23,6 +23,14 @@ public class PlaylistCollaboratorController {
         return ResponseEntity.ok(playlistCollaboratorService.getPlaylistColabborators(playlistId));
     }
 
+    @GetMapping("/getCollaboratorPermissions")
+    public ResponseEntity<List<String>> getCollaboratorPermission(
+            @RequestParam(name = "collabId") Long collabId,
+            @RequestParam(name = "playlistId") Long playlistId
+    ){
+        return ResponseEntity.ok(playlistCollaboratorService.getCollaboratorPermissions(collabId, playlistId));
+    }
+
     @PostMapping("/add")
     public ResponseEntity<String> addCollaboratorToPlaylist(@RequestBody UpdateCollaboratorRequestDTO dto){
         return ResponseEntity.ok(playlistCollaboratorService.addCollaboratorToPlaylist(dto));

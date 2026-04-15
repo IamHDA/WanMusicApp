@@ -48,7 +48,7 @@ public class JamNotificationServiceImp implements JamNotificationService {
         Optional<JamSession> jamSession = jamSessionRepo.findById(request.getJamId());
         Member member = memberRepo.findByEmail(email).orElseThrow(()-> new RuntimeException("Member not found!"));
         Track track = null;
-        if(!request.getNotificationType().equals(NotificationType.JAM_JOIN))
+        if(!request.getNotificationType().equals(NotificationType.JAM_JOIN) || !request.getNotificationType().equals(NotificationType.JAM_CLOSED))
             track = trackRepo.findById(request.getTrackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
         JamNotification jamNotification = new JamNotification();
 
@@ -83,8 +83,11 @@ public class JamNotificationServiceImp implements JamNotificationService {
                 if(isOwner) message = "Host went back to the previous song";
                 else message = member.getFullName() + " wants to go back to the previous song";
             }
-        }else if(request.getNotificationType().equals(NotificationType.JAM_JOIN))
+        }else if(request.getNotificationType().equals(NotificationType.JAM_JOIN)){
             message = member.getFullName() + " joined the jam";
+        }else if(request.getNotificationType().equals(NotificationType.JAM_CLOSED)){
+            message = "Jam session has been closed";
+        }
 
         JamInteractionStatus status = null;
 

@@ -1,15 +1,17 @@
 package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ArtistProfileStatus;
+import com.example.backend.Enum.ContributorRole;
 import com.example.backend.dto.album.GetAlbumsPaginationRequest;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
 import com.example.backend.dto.user.UpdateArtistProfileRequestDTO;
+import com.example.backend.entity.ArtistContribution;
 import com.example.backend.entity.ArtistProfile;
 import com.example.backend.entity.Member;
 import com.example.backend.mapper.ArtistProfileMapper;
-import com.example.backend.repository.ArtistProfileRepository;
-import com.example.backend.repository.MemberRepository;
+import com.example.backend.mapper.TrackMapper;
+import com.example.backend.repository.*;
 import com.example.backend.service.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -30,16 +32,34 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
     private final AuthenticationService authenticationService;
     private final S3StorageService s3StorageService;
     private final RedisService redisService;
+    private final CacheVersionService cacheVersionService;
+    private final ArtistContributionRepository artistContributionRepo;
+    private final FollowerRepository followerRepo;
+    private final TrackMapper trackMapper;
 
     @Override
     public ArtistProfileDTO getProfile(Long artistId) {
-        String key = "/artist/profile/" + artistId;
+        Long currentUserId = authenticationService.getCurrentMemberId();
+
+        String key = "/artist/profile/" + "artistV=" + cacheVersionService.getArtistVersion() + "/" + artistId;
 
         if (redisService.hasKey(key))
             return (ArtistProfileDTO) redisService.get(key);
 
+        System.out.println("artistId = " + artistId);
+        System.out.println("count = " + followerRepo.countByArtist_Id(artistId));
+
         ArtistProfile profile = artistProfileRepo.findById(artistId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
+
+        boolean isFollowed = followerRepo.existsByFollower_IdAndArtist_Id(currentUserId, artistId);
+
         ArtistProfileDTO dto = artistProfileMapper.toArtistProfileDTO(profile);
+        dto.setPopularTracks(artistContributionRepo.findByContributor_IdAndRole(artistId, ContributorRole.OWNER)
+                .stream()
+                .map(ac -> trackMapper.toTrackDTO(ac.getTrack()))
+                .toList());
+        dto.setFollowed(isFollowed);
+        dto.setFollowerCount(followerRepo.countByArtist_Id(artistId));
         dto.setAlbums(albumService.getAlbumsByArtistId(new GetAlbumsPaginationRequest(artistId, 1, 4)));
 
         redisService.save(key, dto, 60);
@@ -53,12 +73,22 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         ArtistProfile profile = artistProfileRepo.findByMemberId(currentUserId).orElseThrow(()-> new RuntimeException("Artist profile not found!"));
 
         Long artistId =  profile.getId();
-        String key = "/artist/myProfile/" + artistId;
+
+
+        String key = "/artist/myProfile/" + "artistV=" + cacheVersionService.getArtistVersion() + "/" + artistId;
         ArtistProfileDTO dto = null;
         if (redisService.hasKey(key))
             return (ArtistProfileDTO) redisService.get(key);
 
         dto = artistProfileMapper.toArtistProfileDTO(profile);
+
+        dto.setPopularTracks(artistContributionRepo.findByContributor_IdAndRole(artistId, ContributorRole.OWNER)
+                .stream()
+                .map(ac -> trackMapper.toTrackDTO(ac.getTrack()))
+                .toList());
+
+        dto.setFollowerCount(followerRepo.countByArtist_Id(artistId));
+
         dto.setAlbums(albumService.getAlbumsByArtistId(new GetAlbumsPaginationRequest(artistId, 1, 4)));
 
         redisService.save(key, dto, 60);

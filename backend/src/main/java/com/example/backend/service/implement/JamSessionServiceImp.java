@@ -74,7 +74,7 @@ public class JamSessionServiceImp implements JamSessionService {
                                     LocalDateTime.now()
                             ).toMillis();
 
-                            currentSeekPosition += (int) (elapsedMillis * jamPlayerState.getPlaybackRate() / 1000.0);
+                            currentSeekPosition += (int) (elapsedMillis / 1000);
                         }
 
                         jamTrackPreviewDTO.setCurrentSeekPosition(currentSeekPosition);

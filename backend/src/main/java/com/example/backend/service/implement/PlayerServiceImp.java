@@ -42,7 +42,7 @@ public class PlayerServiceImp implements PlayerService {
 
         // NẾU CHƯA TỪNG NGHE GÌ (Trạng thái rỗng) -> Trả về random nhạc (dùng Track lẻ ngoài Album)
         if (stateOpt.isEmpty() || stateOpt.get().getTrack() == null) {
-            Page<Track> generalTracks = trackRepo.findAllByStatusAndNotInAlbum(
+            Page<Track> generalTracks = trackRepo.findAllByStatus(
                     TrackStatus.PUBLISHED, // Đã sửa thành PUBLISHED
                     PageRequest.of(index, pageSize)
             );

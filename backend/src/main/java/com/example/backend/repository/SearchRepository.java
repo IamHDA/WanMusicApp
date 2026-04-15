@@ -190,7 +190,8 @@ public class SearchRepository {
 
     private List<AlbumPreviewDTO> searchAlbums(String keyword, int pageSize, int offset) {
         String jpql = "SELECT DISTINCT a FROM Album a " +
-                "WHERE LOWER(a.title) LIKE LOWER(:keyword) " +
+                "WHERE LOWER(a.title) LIKE LOWER(:keyword)" +
+                "AND a.status = 'VERIFIED' " +
                 "ORDER BY CASE " +
                 "   WHEN LOWER(a.title) LIKE LOWER(:prefixKeyword) THEN 0 " +
                 "   ELSE 1 " +
@@ -225,6 +226,7 @@ public class SearchRepository {
                         "   (f.friend.id = m.id AND f.member.id = :currentUserId)" +
                         ") " +
                         "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
+                        "AND m.role <> 'ADMIN'" +
                         "AND m.id <> :currentUserId " +
                         "ORDER BY CASE " +
                         "   WHEN LOWER(m.fullName) LIKE LOWER(:prefixKeyword) THEN 0 " +

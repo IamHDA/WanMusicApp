@@ -15,4 +15,6 @@ public interface PlaylistCollaboratorService {
     String revokeCollaboratorPermissions(UpdateCollaboratorPermissionRequestDTO dto);
 
     List<MemberProfilePreviewDTO> getPlaylistColabborators(Long playlistId);
+
+    List<String> getCollaboratorPermissions(Long collabId, Long playlistId);
 }

@@ -5,6 +5,7 @@ public enum NotificationType {
     JAM_INVITE,
     JAM_JOIN,
     JAM_INTERACTION,
+    JAM_CLOSED,
     SONG_RELEASING,
     PLAYLIST_COLLABORATION
 }

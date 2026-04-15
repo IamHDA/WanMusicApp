@@ -21,7 +21,7 @@ public class UserInteraction {
     private Long id;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "interaction_type")
+    @Column(name = "interaction_type", length = 50)
     private InteractionType type;
     @Column(name = "listen_duration", nullable = false)
     private int duration;

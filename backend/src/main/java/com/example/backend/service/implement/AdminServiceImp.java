@@ -109,6 +109,7 @@ public class AdminServiceImp implements AdminService {
         }
         trackRepo.saveAll(tracks);
 
+        cacheVersionService.bumpArtistVersion();
         cacheVersionService.bumpAlbumVersion();
 
         return "Approved album request successfully!";

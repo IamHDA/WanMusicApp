@@ -18,6 +18,7 @@ public class NotificationDTO {
     private Long friendRequestSenderId;
     private String message;
     private NotificationType type;
+    private boolean isAccepted = false;
     private LocalDateTime createdAt;
 
 }

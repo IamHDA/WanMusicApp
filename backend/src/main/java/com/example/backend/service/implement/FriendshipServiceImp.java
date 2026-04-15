@@ -2,23 +2,33 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.FriendStatus;
 import com.example.backend.Enum.NotificationType;
+import com.example.backend.Enum.UserStatus;
 import com.example.backend.dto.CreateNotificationDTO;
+import com.example.backend.dto.FriendStateDTO;
 import com.example.backend.dto.NotificationDTO;
+import com.example.backend.dto.PageResponse;
 import com.example.backend.entity.EmbeddedId.FriendshipId;
 import com.example.backend.entity.Friendship;
 import com.example.backend.entity.Member;
+import com.example.backend.entity.PlayerState;
+import com.example.backend.mapper.MemberMapper;
+import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.FriendshipRepository;
 import com.example.backend.repository.MemberRepository;
+import com.example.backend.repository.PlayerStateRepository;
 import com.example.backend.service.AuthenticationService;
 import com.example.backend.service.CacheVersionService;
 import com.example.backend.service.FriendshipService;
 import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.util.List;
 import java.util.Objects;
 
 @Service
@@ -26,7 +36,10 @@ import java.util.Objects;
 public class FriendshipServiceImp implements FriendshipService {
 
     private final MemberRepository memberRepo;
+    private final TrackMapper trackMapper;
+    private final MemberMapper memberMapper;
     private final AuthenticationService authenticationService;
+    private final PlayerStateRepository playerStateRepo;
     private final FriendshipRepository friendshipRepo;
     private final NotificationService notificationService;
     private final CacheVersionService cacheVersionService;
@@ -34,6 +47,29 @@ public class FriendshipServiceImp implements FriendshipService {
     @Override
     public int countFriendByUserId(Long userId) {
         return friendshipRepo.countFriendByUserId(userId);
+    }
+
+    @Override
+    public PageResponse<FriendStateDTO> getFriendsState(int index, int size) {
+        Long currentUserId = authenticationService.getCurrentMemberId();
+
+        Page<Friendship> friendships = friendshipRepo.findByMemberId(currentUserId, PageRequest.of(index - 1, size));
+
+        Page<FriendStateDTO> result = friendships.map(fs -> {
+            FriendStateDTO dto = new FriendStateDTO();
+            Member friend = fs.getFriend();
+            PlayerState ps = playerStateRepo
+                    .findByMemberId(friend.getId())
+                    .orElse(new PlayerState());
+
+            dto.setCurrentTrack(trackMapper.toTrackPreviewDTO(ps.getTrack()));
+            dto.setStatus(friend.getStatus());
+            dto.setMember(memberMapper.toPreviewDTO(friend));
+
+            return dto;
+        });
+
+        return new PageResponse<>(result.getContent(), index, friendships.getTotalPages());
     }
 
     @Override

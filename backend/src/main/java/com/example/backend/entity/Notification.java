@@ -30,6 +30,8 @@ public class Notification {
     private NotificationType type;
     @Column(name = "is_read", nullable = false)
     private boolean isRead;
+    @Column(name = "is_accepted", nullable = false)
+    private boolean isAccepted;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

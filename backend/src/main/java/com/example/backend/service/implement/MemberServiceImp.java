@@ -132,4 +132,10 @@ public class MemberServiceImp implements MemberService {
         accountSettingsDTO.setSubscriptionType(member.getSubscriptionType().name());
         return accountSettingsDTO;
     }
+
+    @Override
+    public String followArtist(Long artistId) {
+
+        return "";
+    }
 }
