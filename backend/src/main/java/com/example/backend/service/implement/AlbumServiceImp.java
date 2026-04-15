@@ -34,6 +34,7 @@ public class AlbumServiceImp implements AlbumService {
     private final ArtistProfileRepository artistProfileRepo;
 
     @Override
+    @Transactional(readOnly = true)
     public PageResponse<AlbumPreviewDTO> getAlbumsByArtistId(GetAlbumsPaginationRequest request) {
         Page<Album> albums = albumRepo.findByArtistId(request.artistId(), PageRequest.of(request.index() - 1, request.size()));
         return pageMapper.toPageResponse(albums, albumMapper::toAlbumPreviewDTO);

@@ -20,13 +20,13 @@ public interface TrackRepository extends JpaRepository <Track, Long>{
             "contributions.contributor"
     })
     @Query("""
-    SELECT t FROM Track t
-    WHERE t.status = :status
-    AND NOT EXISTS (
-        SELECT 1 FROM AlbumTrack at
-        WHERE at.track = t
-    )
-""")
+        SELECT t FROM Track t
+        WHERE t.status = :status
+        AND NOT EXISTS (
+            SELECT 1 FROM AlbumTrack at
+            WHERE at.track = t
+        )
+    """)
     Page<Track> findAllByStatusAndNotInAlbum(
             @Param("status") TrackStatus status,
             Pageable pageable

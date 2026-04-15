@@ -10,6 +10,7 @@ public class MyProfileDTO {
     private Long id;
     private String displayName;
     private String avatarUrl;
+    private String subscriptionType;
     
     private String friendStatus; // Mặc định là SELF
     private int followedArtistCount;

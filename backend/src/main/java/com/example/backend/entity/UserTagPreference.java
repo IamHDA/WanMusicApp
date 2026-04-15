@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import java.time.LocalDateTime;
+
 import com.example.backend.entity.EmbeddedId.UserTagPreferenceId;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -32,5 +34,14 @@ public class UserTagPreference {
         this.member = member;
         this.tag = tag;
         this.score = score;
+    }
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

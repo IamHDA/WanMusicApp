@@ -13,10 +13,10 @@ import java.util.Optional;
 public interface PlaylistRepository extends JpaRepository<Playlist, Long> {
 
     @Query("""
-    select distinct p from Playlist p
-    join PlaylistCollaborator pc on p.id = pc.playlist.id
-    where p.owner.id = :memberId or pc.collaborator.id = :memberId
-""")
+        select distinct p from Playlist p
+        left join PlaylistCollaborator pc on p.id = pc.playlist.id
+        where p.owner.id = :memberId or pc.collaborator.id = :memberId
+    """)
     Optional<List<Playlist>> findMemberPlaylists(@Param("memberId") Long memberId);
 
     int countByOwnerId(Long ownerId);

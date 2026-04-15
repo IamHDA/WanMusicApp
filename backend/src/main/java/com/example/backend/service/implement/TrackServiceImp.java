@@ -74,46 +74,58 @@ public class TrackServiceImp implements TrackService {
 
         trackRepo.save(track);
 
-        HttpClient jdkHttpClient = HttpClient.newBuilder()
-                .version(HttpClient.Version.HTTP_1_1)
-                .build();
+        List<String> predictedTags = new ArrayList<>();
+        try {
+            HttpClient jdkHttpClient = HttpClient.newBuilder()
+                    .version(HttpClient.Version.HTTP_1_1)
+                    .build();
 
-        WebClient webClient = WebClient.builder()
-                .clientConnector(new JdkClientHttpConnector(jdkHttpClient))
-                .baseUrl("http://localhost:1111")
-                .build();
+            WebClient webClient = WebClient.builder()
+                    .clientConnector(new JdkClientHttpConnector(jdkHttpClient))
+                    .baseUrl("http://localhost:1111")
+                    .build();
 
-        InputStream stream = s3StorageService.getFile(track.getFileKey(), "songs");
-        byte[] fileBytes = stream.readAllBytes();
+            InputStream stream = s3StorageService.getFile(track.getFileKey(), "songs");
+            byte[] fileBytes = stream.readAllBytes();
 
-        String fileNameWithExt = track.getFileKey();
-        if (!fileNameWithExt.contains(".")) {
-            fileNameWithExt += ".mp3";
-        }
-        final String finalFileName = fileNameWithExt;
-
-        ByteArrayResource resource = new ByteArrayResource(fileBytes) {
-            @Override
-            public String getFilename() {
-                return finalFileName;
+            String fileNameWithExt = track.getFileKey();
+            if (!fileNameWithExt.contains(".")) {
+                fileNameWithExt += ".mp3";
             }
-        };
+            final String finalFileName = fileNameWithExt;
 
-        MultipartBodyBuilder builder = new MultipartBodyBuilder();
-        builder.part("file", resource)
-                .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
-                .contentType(MediaType.parseMediaType("audio/mpeg"));
+            ByteArrayResource resource = new ByteArrayResource(fileBytes) {
+                @Override
+                public String getFilename() {
+                    return finalFileName;
+                }
+            };
+            MultipartBodyBuilder builder = new MultipartBodyBuilder();
+            builder.part("file", resource)
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
+                    .contentType(MediaType.parseMediaType("audio/mpeg"));
 
-        List<String> predictedTags = webClient.post()
-                .uri("/predict")
-                .contentType(MediaType.MULTIPART_FORM_DATA)
-                .body(BodyInserters.fromMultipartData(builder.build()))
-                .retrieve()
-                .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
-                .block();
+            // Gọi AI Service
+            predictedTags = webClient.post()
+                    .uri("/predict")
+                    .contentType(MediaType.MULTIPART_FORM_DATA)
+                    .body(BodyInserters.fromMultipartData(builder.build()))
+                    .retrieve()
+                    .bodyToMono(new ParameterizedTypeReference<List<String>>() {})
+                    .block();
 
-        for(String tag : predictedTags){
-            System.out.println(tag);
+            if (predictedTags != null) {
+                System.out.println("AI Predicted Tags: " + String.join(", ", predictedTags));
+            } else {
+                predictedTags = new ArrayList<>(); // Đảm bảo không bị null
+            }
+
+        } catch (Exception e) {
+            // Log lại lỗi nhưng KHÔNG NÉM RA (throw) để luồng tiếp tục chạy
+            System.err.println("[CẢNH BÁO] Không thể kết nối đến AI Service (http://localhost:1111) hoặc quá trình dự đoán thất bại.");
+            System.err.println("Lý do: " + e.getMessage());
+            System.err.println("-> Bỏ qua gán nhãn tự động, tiếp tục lưu nháp Track.");
+            predictedTags = new ArrayList<>(); // Gán rỗng để chạy tiếp
         }
 
         List<TrackTag> tags = tagRepo.findByNameIn(predictedTags)
@@ -126,10 +138,13 @@ public class TrackServiceImp implements TrackService {
 
         List<ArtistContribution> contributions = new ArrayList<>();
 
-        for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
-            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
-            ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
-            contributions.add(new ArtistContribution(track, contributor, role));
+        if (dto.featuredArtistDTO() != null) {
+            for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
+                ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId())
+                        .orElseThrow(()-> new RuntimeException("Artist not found for draft ID: " + contributorDTO.getId()));
+                ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
+                contributions.add(new ArtistContribution(track, contributor, role));
+            }
         }
 
         track.setTags(tags);

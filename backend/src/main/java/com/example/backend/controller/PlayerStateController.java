@@ -5,6 +5,7 @@ import com.example.backend.service.PlayerStateService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -16,7 +17,7 @@ public class PlayerStateController {
     private final PlayerStateService playerStateService;
 
     @PutMapping
-    public ResponseEntity<String> savePlayerState(SavePlayerStateRequestDTO dto){
+    public ResponseEntity<String> savePlayerState(@RequestBody SavePlayerStateRequestDTO dto){
         return ResponseEntity.ok(playerStateService.savePlayerState(dto));
     }
 

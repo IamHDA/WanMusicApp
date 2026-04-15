@@ -27,7 +27,7 @@ public class Subscription {
     @Column(name = "endDate", nullable = false)
     private LocalDate endDate;
     @Column(name = "is_active", nullable = false)
-    private boolean isActive;
+    private boolean active;
 
     @ManyToOne(
             fetch = FetchType.LAZY,

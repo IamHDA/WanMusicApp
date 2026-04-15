@@ -11,12 +11,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import java.time.LocalDate;
 import java.util.List;
 
-@Mapper(componentModel = "spring")
+@Mapper(componentModel = "spring", uses = {ArtistProfileMapper.class})
 public abstract class AlbumMapper {
 
     @Autowired
     private S3StorageService s3StorageService;
 
+    @Mapping(source = "artist", target = "artist")
     @Mapping(source = "thumbnailKey", target = "thumbnailUrl", qualifiedByName = "albumThumbnailKeyToUrl")
     @Mapping(source = "releaseDate", target = "releaseYear", qualifiedByName = "albumDateToYear")
     public abstract AlbumPreviewDTO toAlbumPreviewDTO(Album album);

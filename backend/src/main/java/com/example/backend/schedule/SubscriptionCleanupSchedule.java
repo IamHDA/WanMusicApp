@@ -35,7 +35,7 @@ public class SubscriptionCleanupSchedule {
         log.info("[CRON JOB] Bắt đầu quét các gói Premium đã hết hạn...");
 
         LocalDate today = LocalDate.now();
-        List<Subscription> expiredSubs = subscriptionRepo.findAllByIsActiveTrueAndEndDateBefore(today);
+        List<Subscription> expiredSubs = subscriptionRepo.findAllByActiveTrueAndEndDateBefore(today);
 
         if (expiredSubs.isEmpty()) {
             log.info("[CRON JOB] Không có gói Premium nào hết hạn cần xử lý.");

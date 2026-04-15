@@ -60,6 +60,8 @@ public class MemberServiceImp implements MemberService {
 
         MemberProfileDTO memberProfileDTO = memberMapper.toProfileDTO(member);
 
+        memberProfileDTO.setSubscriptionType(member.getSubscriptionType().name());
+
         Long currentUserId = authenticationService.getCurrentMemberId();
         String status = friendUtil.getFriendshipStatus(currentUserId, memberId);
         memberProfileDTO.setFriendStatus(status);
@@ -88,6 +90,7 @@ public class MemberServiceImp implements MemberService {
         myProfileDTO.setId(member.getId());
         myProfileDTO.setDisplayName(member.getFullName());
         myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(member.getAvatarKey(), "avatars"));
+        myProfileDTO.setSubscriptionType(member.getSubscriptionType().name());
 
         artistProfileRepo.findByMemberId(currentUserId).ifPresent(artistProfile -> {
             myProfileDTO.setArtistStatus(artistProfile.getStatus().name());
