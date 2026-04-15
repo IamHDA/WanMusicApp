@@ -10,5 +10,6 @@ public interface TagService {
     TagDTO createTag(CreateTagRequestDTO dto);
     List<TagDTO> getAllTags();
     String deleteTag(Long tagId);
-
+    String updateTag(Long id, CreateTagRequestDTO dto);
+    TagDTO getTag(Long id);
 }

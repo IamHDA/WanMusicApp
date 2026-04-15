@@ -5,12 +5,14 @@ import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.ContributorDTO;
 import com.example.backend.dto.PageResponse;
 import com.example.backend.dto.track.*;
+import com.example.backend.dto.user.ArtistDashboardDTO;
 import com.example.backend.entity.*;
 import com.example.backend.mapper.PageMapper;
 import com.example.backend.mapper.TrackMapper;
 import com.example.backend.repository.ArtistProfileRepository;
 import com.example.backend.repository.TagRepository;
 import com.example.backend.repository.TrackRepository;
+import com.example.backend.service.AuthenticationService;
 import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import lombok.RequiredArgsConstructor;
@@ -47,6 +49,7 @@ public class TrackServiceImp implements TrackService {
     private final TrackMapper trackMapper;
     private final PageMapper pageMapper;
     private final S3StorageService s3StorageService;
+    private final AuthenticationService authenticationService;
 
     @Override
     @Transactional(readOnly = true)
@@ -146,10 +149,8 @@ public class TrackServiceImp implements TrackService {
                 contributions.add(new ArtistContribution(track, contributor, role));
             }
         }
-
         track.setTags(tags);
         track.setContributions(contributions);
-
         trackRepo.save(track);
 
         return trackMapper.toTrackDraftResponse(track);
@@ -186,8 +187,15 @@ public class TrackServiceImp implements TrackService {
             track.getTags().add(new TrackTag(track, tag));
         }
 
+        // Ép Owner luôn có
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
+                .orElseThrow(()-> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được submit track!"));
+        track.getContributions().add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
+
         for(ContributorDTO contributorDTO : dto.contributors()){
-            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId()).orElseThrow(()-> new RuntimeException("Artist not found!"));
+            ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId())
+                    .orElseThrow(()-> new RuntimeException("Artist ID không tồn tại trên hệ thống: " + contributorDTO.getId() + ". Vui lòng kiểm tra lại Dữ liệu Frontend truyền lên !"));
             ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
             track.getContributions().add(new ArtistContribution(track, contributor, role));
         }
@@ -202,5 +210,26 @@ public class TrackServiceImp implements TrackService {
     public String deleteTrack(Long trackId) {
         trackRepo.deleteById(trackId);
         return "Track deleted successfully!";
+    }
+
+    @Override
+    public ArtistDashboardDTO getArtistDashboard() {
+        Long currentUserId = authenticationService.getCurrentMemberId();
+        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
+                .orElseThrow(()-> new RuntimeException("Bạn không phải Artist!"));
+        
+        List<Track> tracks = trackRepo.findTracksByOwnerId(ownerProfile.getId());
+        List<TrackArtistDTO> trackDTOs = tracks.stream().map(t -> new TrackArtistDTO(
+                t.getId(),
+                t.getTitle(),
+                t.getThumbnailKey() != null ? s3StorageService.getGetPresignedUrl(t.getThumbnailKey(), "thumbnails") : null,
+                t.getDuration(),
+                t.getStatus().name()
+        )).toList();
+        
+        long totalFans = ownerProfile.getFollowers() != null ? ownerProfile.getFollowers().size() : 0;
+        long totalDrops = tracks.size();
+        
+        return new ArtistDashboardDTO(totalFans, totalDrops, trackDTOs);
     }
 }

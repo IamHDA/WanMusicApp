@@ -28,6 +28,18 @@ public class TagController {
         return ResponseEntity.ok(tagService.createTag(dto));
     }
 
+    @PutMapping("/updateTag")
+    @PreAuthorize( "hasRole('ADMIN')")
+    public ResponseEntity<String> updateTag(@RequestParam Long id,@RequestBody CreateTagRequestDTO dto){
+        return ResponseEntity.ok(tagService.updateTag(id, dto));
+    }
+
+    @GetMapping("/getTag")
+    @PreAuthorize( "hasRole('ADMIN')")
+    public ResponseEntity<TagDTO> getTab(@RequestParam Long id){
+        return ResponseEntity.ok(tagService.getTag(id));
+    }
+
     @DeleteMapping("/deleteTag")
     @PreAuthorize( "hasRole('ADMIN')")
     public ResponseEntity<String> deleteTag(@RequestParam Long id){

@@ -7,6 +7,7 @@ import com.example.backend.dto.track.TrackCreateDraftDTO;
 import com.example.backend.dto.track.TrackDraftResponseDTO;
 import com.example.backend.dto.track.TrackPreviewDTO;
 import com.example.backend.dto.track.TrackSubmitDTO;
+import com.example.backend.dto.user.ArtistDashboardDTO;
 import com.example.backend.service.S3StorageService;
 import com.example.backend.service.TrackService;
 import org.springframework.http.ResponseEntity;
@@ -64,5 +65,10 @@ public class TrackController {
     @DeleteMapping("/delete/{id}")
     public ResponseEntity<String> deleteTrack(@PathVariable Long id){
         return ResponseEntity.ok(trackService.deleteTrack(id));
+    }
+
+    @GetMapping("/artist/dashboard")
+    public ResponseEntity<ArtistDashboardDTO> getArtistDashboard(){
+        return ResponseEntity.ok(trackService.getArtistDashboard());
     }
 }
