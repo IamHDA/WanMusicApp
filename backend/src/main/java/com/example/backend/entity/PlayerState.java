@@ -29,9 +29,7 @@ public class PlayerState {
     private LocalDateTime lastUpdated;
 
     @OneToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "member_id")
     private Member member;

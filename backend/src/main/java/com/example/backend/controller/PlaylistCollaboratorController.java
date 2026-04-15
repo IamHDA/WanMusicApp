@@ -2,10 +2,14 @@ package com.example.backend.controller;
 
 import com.example.backend.dto.UpdateCollaboratorPermissionRequestDTO;
 import com.example.backend.dto.UpdateCollaboratorRequestDTO;
+import com.example.backend.dto.user.MemberProfilePreviewDTO;
+import com.example.backend.dto.user.UserPreviewDTO;
 import com.example.backend.service.PlaylistCollaboratorService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -13,6 +17,11 @@ import org.springframework.web.bind.annotation.*;
 public class PlaylistCollaboratorController {
 
     private final PlaylistCollaboratorService playlistCollaboratorService;
+
+    @GetMapping("/getCollaborators/{playlistId}")
+    public ResponseEntity<List<MemberProfilePreviewDTO>> getPlaylistCollaborators(@PathVariable Long playlistId){
+        return ResponseEntity.ok(playlistCollaboratorService.getPlaylistColabborators(playlistId));
+    }
 
     @PostMapping("/add")
     public ResponseEntity<String> addCollaboratorToPlaylist(@RequestBody UpdateCollaboratorRequestDTO dto){
@@ -23,7 +32,6 @@ public class PlaylistCollaboratorController {
     public ResponseEntity<String> updateCollaboratorPermission(@RequestBody UpdateCollaboratorPermissionRequestDTO dto){
         return ResponseEntity.ok(playlistCollaboratorService.updateCollaboratorPermissions(dto));
     }
-
 
     @PutMapping("/revokePermission")
     public ResponseEntity<String> revokeCollaboratorPermission(@RequestBody UpdateCollaboratorPermissionRequestDTO dto){

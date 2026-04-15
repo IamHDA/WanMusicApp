@@ -4,7 +4,8 @@ import com.example.backend.Enum.NotificationType;
 import com.example.backend.dto.CreateJamInvitationRequestDTO;
 import com.example.backend.dto.CreateJamNotificationDTO;
 import com.example.backend.dto.CreateNotificationDTO;
-import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
+import com.example.backend.dto.jam.JamNotificationDTO;
+import com.example.backend.dto.jam.JamParticipantRequestDTO;
 import com.example.backend.entity.EmbeddedId.JamParticipantId;
 import com.example.backend.entity.JamParticipant;
 import com.example.backend.entity.JamSession;
@@ -17,6 +18,7 @@ import com.example.backend.service.JamNotificationService;
 import com.example.backend.service.JamParticipantService;
 import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,10 +32,11 @@ public class JamParticipantServiceImp implements JamParticipantService {
     private final AuthenticationService authenticationService;
     private final MemberRepository memberRepo;
     private final NotificationService notificationService;
+    private final SimpMessagingTemplate simpMessagingTemplate;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public String joinJam(AcceptInvitationRequestDTO request) {
+    public Long joinJamById(JamParticipantRequestDTO request) {
         JamParticipant participant = new JamParticipant();
         Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).get();
         JamSession jamSession = jamSessionRepo.findById(request.jamSessionId()).get();
@@ -45,13 +48,15 @@ public class JamParticipantServiceImp implements JamParticipantService {
         jamParticipantRepo.save(participant);
 
         CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
-        dto.setJamJd(request.jamSessionId());
+        dto.setJamId(request.jamSessionId());
         dto.setNotificationType(NotificationType.JAM_JOIN);
-        dto.setUsername(member.getFullName());
 
-        jamNotificationService.sendJamNotification(dto);
+        JamNotificationDTO jamnotificationDTO = jamNotificationService.sendJamNotification(dto, member.getEmail());
 
-        return "Joined jam session successfully!";
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamnotificationDTO.getJamSessionId(), jamnotificationDTO);
+        simpMessagingTemplate.convertAndSend("/jam/update/" + jamnotificationDTO.getJamSessionId(), "Update");
+
+        return jamSession.getId();
     }
 
     @Override
@@ -67,5 +72,38 @@ public class JamParticipantServiceImp implements JamParticipantService {
         }
 
         return "Members invited successfully!";
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public String leaveJam(JamParticipantRequestDTO request) {
+        Long currentMemberId = authenticationService.getCurrentMemberId();
+
+        jamParticipantRepo.deleteBySession_IdAndParticipant_Id(request.jamSessionId(), currentMemberId);
+
+        return "Leave jam successfully!";
+    }
+
+    @Override
+    public Long joinJamByCode(JamParticipantRequestDTO requestDTO) {
+        JamParticipant participant = new JamParticipant();
+        Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).get();
+        JamSession jamSession = jamSessionRepo.findBySessionCode(requestDTO.jamSessionCode());
+        participant.setParticipant(member);
+        participant.setSession(jamSession);
+
+        participant.setId(new JamParticipantId(jamSession.getId(), member.getId()));
+
+        jamParticipantRepo.save(participant);
+
+        CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
+        dto.setJamId( jamSession.getId());
+        dto.setNotificationType(NotificationType.JAM_JOIN);
+
+        JamNotificationDTO jamnotificationDTO = jamNotificationService.sendJamNotification(dto, member.getEmail());
+
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamnotificationDTO.getJamSessionId(), jamnotificationDTO);
+
+        return jamSession.getId();
     }
 }

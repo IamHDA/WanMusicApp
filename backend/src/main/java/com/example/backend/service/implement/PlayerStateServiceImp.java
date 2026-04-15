@@ -3,10 +3,12 @@ package com.example.backend.service.implement;
 import com.example.backend.dto.SavePlayerStateRequestDTO;
 import com.example.backend.entity.Album;
 import com.example.backend.entity.Member;
+import com.example.backend.entity.Track;
 import com.example.backend.entity.PlayerState;
 import com.example.backend.entity.Playlist;
 import com.example.backend.repository.AlbumRepository;
 import com.example.backend.repository.MemberRepository;
+import com.example.backend.repository.TrackRepository;
 import com.example.backend.repository.PlayerStateRepository;
 import com.example.backend.repository.PlaylistRepository;
 import com.example.backend.service.AuthenticationService;
@@ -28,6 +30,8 @@ public class PlayerStateServiceImp implements PlayerStateService {
     private final PlaylistRepository playlistRepo;
     private final PlayerStateRepository playerStateRepo;
 
+    private final TrackRepository trackRepo;
+
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String savePlayerState(SavePlayerStateRequestDTO dto) {
@@ -44,6 +48,8 @@ public class PlayerStateServiceImp implements PlayerStateService {
                     return ps;
                 });
 
+        Track track = trackRepo.findById(dto.trackId()).orElseThrow(() -> new RuntimeException("Track not found"));
+        playerState.setTrack(track);
         playerState.setCurrentSeekPosition(dto.currentSeekPosition());
         playerState.setLastUpdated(LocalDateTime.now());
 
@@ -55,11 +61,11 @@ public class PlayerStateServiceImp implements PlayerStateService {
             Album album = albumRepo.findById(dto.albumId()).orElse(null);
             playerState.setAlbum(album);
             playerState.setPlaylist(null);
+        }else {
+            playerState.setAlbum(null);
+            playerState.setPlaylist(null);
         }
-
-        if (playerState.getId() == null) {
-            playerStateRepo.save(playerState);
-        }
+        playerStateRepo.save(playerState);
 
         return "Player State saved successfully!";
     }

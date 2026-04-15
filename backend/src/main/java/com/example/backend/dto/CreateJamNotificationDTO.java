@@ -8,10 +8,9 @@ import lombok.Setter;
 @Getter
 @Setter
 public class CreateJamNotificationDTO {
-    private Long jamJd;
+    private Long jamId;
     private Long trackId;
     private NotificationType notificationType;
     private InteractionType interactionType;
     private Integer duration;
-    private String username;
 }

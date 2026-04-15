@@ -28,9 +28,7 @@ public class JamSession {
     private int size;
 
     @OneToOne(
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
     @JoinColumn(name = "owner_id")
     private Member owner;
@@ -43,14 +41,17 @@ public class JamSession {
     )
     private List<JamParticipant> participants;
 
+    @OneToMany(
+            mappedBy = "jamSession",
+            fetch = FetchType.LAZY
+    )
+    private List<JamNotification> jamNotifications;
 
     @OneToMany(
             mappedBy = "jamSession",
-            fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL,
-            orphanRemoval = true
+            fetch = FetchType.LAZY
     )
-    private List<JamNotification> notifications;
+    private List<Notification> notificationsToMember = new ArrayList<>();
 
     @ManyToOne(
             fetch = FetchType.LAZY
@@ -69,4 +70,12 @@ public class JamSession {
     )
     @JoinColumn(name = "context_album_id")
     private Album contextAlbum;
+
+    @OneToOne(
+            mappedBy = "jamSession",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private JamPlayerState playerState;
 }

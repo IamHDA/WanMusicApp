@@ -10,6 +10,7 @@ import com.example.backend.entity.Member;
 import com.example.backend.repository.FriendshipRepository;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.service.AuthenticationService;
+import com.example.backend.service.CacheVersionService;
 import com.example.backend.service.FriendshipService;
 import com.example.backend.service.NotificationService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Objects;
 
 @Service
@@ -27,6 +29,7 @@ public class FriendshipServiceImp implements FriendshipService {
     private final AuthenticationService authenticationService;
     private final FriendshipRepository friendshipRepo;
     private final NotificationService notificationService;
+    private final CacheVersionService cacheVersionService;
 
     @Override
     public int countFriendByUserId(Long userId) {
@@ -47,12 +50,14 @@ public class FriendshipServiceImp implements FriendshipService {
         friendship.setStatus(FriendStatus.PENDING);
         friendship.setMember(currentMember);
         friendship.setFriend(friend);
-        friendship.setCreatedAt(LocalDateTime.now());
+        friendship.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
 
         friendshipRepo.save(friendship);
 
+        cacheVersionService.bumpFriendVersion();
+
         CreateNotificationDTO dto = new CreateNotificationDTO();
-        dto.setFriendRequestId(friendshipId);
+        dto.setFriendRequestSenderId(currentMember.getId());
         dto.setSenderName(currentMember.getFullName());
         dto.setTargetId(friendId);
         dto.setNotificationType(NotificationType.FRIEND_REQUEST);
@@ -66,6 +71,8 @@ public class FriendshipServiceImp implements FriendshipService {
     @Transactional(rollbackFor = Exception.class)
     public String rejectFriendRequest(Long friendId) {
         Member currentMember = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
+
+        cacheVersionService.bumpFriendVersion();
 
         Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentMember.getId(), friendId);
 
@@ -81,8 +88,13 @@ public class FriendshipServiceImp implements FriendshipService {
 
         Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentMember.getId(), friendId);
 
+        cacheVersionService.bumpFriendVersion();
+
         if(friendship.getStatus() != FriendStatus.PENDING)
             throw new RuntimeException("Cannot delete friend request which is not pending!");
+
+        System.out.println("Receiver: " + friendship.getId().getFriendId());
+        System.out.println("Member: " + currentMember.getId());
 
         friendshipRepo.delete(friendship);
 
@@ -93,6 +105,8 @@ public class FriendshipServiceImp implements FriendshipService {
     @Transactional(rollbackFor = Exception.class)
     public String acceptFriendRequest(Long friendId) {
         Member currentMember = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
+
+        cacheVersionService.bumpFriendVersion();
 
         Friendship friendship = friendshipRepo.findByMemberIdAndFriendId(currentMember.getId(), friendId);
 
@@ -105,6 +119,8 @@ public class FriendshipServiceImp implements FriendshipService {
     @Transactional(rollbackFor = Exception.class)
     public String deleteFriend(Long friendId) {
         Long currentUserId = authenticationService.getCurrentMemberId();
+
+        cacheVersionService.bumpFriendVersion();
 
         friendshipRepo.deleteByMemberIdAndFriendId(currentUserId, friendId);
 

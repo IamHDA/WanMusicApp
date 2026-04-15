@@ -33,8 +33,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.http.HttpClient;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -50,8 +52,16 @@ public class TrackServiceImp implements TrackService {
     private final AuthenticationService authenticationService;
 
     @Override
+    @Transactional(readOnly = true)
+    public TrackPreviewDTO getTrack(Long trackId) {
+        Track track = trackRepo.findById(trackId).orElseThrow(()-> new RuntimeException("Track not found!"));
+        return trackMapper.toTrackPreviewDTO(track);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size) {
-        return pageMapper.toPageResponse(trackRepo.findAllByStatus(status, PageRequest.of(index, size)), trackMapper::toTrackAdminReviewDTO);
+        return pageMapper.toPageResponse(trackRepo.findAllByStatusAndNotInAlbum(status, PageRequest.of(index, size)), trackMapper::toTrackAdminReviewDTO);
     }
 
     @Override
@@ -63,12 +73,12 @@ public class TrackServiceImp implements TrackService {
         track.setThumbnailKey(dto.thumbnailKey());
         track.setDuration(dto.duration());
         track.setStatus(TrackStatus.DRAFT);
-        track.setCreatedAt(LocalDateTime.now());
+        track.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
 
         trackRepo.save(track);
 
         List<String> predictedTags = new ArrayList<>();
-        try{
+        try {
             HttpClient jdkHttpClient = HttpClient.newBuilder()
                     .version(HttpClient.Version.HTTP_1_1)
                     .build();
@@ -97,6 +107,7 @@ public class TrackServiceImp implements TrackService {
             builder.part("file", resource)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "form-data; name=\"file\"; filename=\"" + finalFileName + "\"")
                     .contentType(MediaType.parseMediaType("audio/mpeg"));
+
             // Gọi AI Service
             predictedTags = webClient.post()
                     .uri("/predict")
@@ -129,12 +140,6 @@ public class TrackServiceImp implements TrackService {
                 .collect(Collectors.toList());
 
         List<ArtistContribution> contributions = new ArrayList<>();
-        
-        // Gán tự động Nghệ sĩ đang đăng nhập là OWNER 
-        Long currentUserId = authenticationService.getCurrentMemberId();
-        ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
-                .orElseThrow(()-> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được tạo nháp!"));
-        contributions.add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
 
         if (dto.featuredArtistDTO() != null) {
             for(ContributorDTO contributorDTO : dto.featuredArtistDTO()){
@@ -153,7 +158,7 @@ public class TrackServiceImp implements TrackService {
 
     @Override
     public PageResponse<TrackPreviewDTO> searchTracksAddToPlaylist(List<Long> existedTrackIds, String keyword, int index, int size) {
-        Page<Track> foundedTracks = trackRepo.findAllByIdNotInAndTitleContainingIgnoreCase(existedTrackIds, keyword, PageRequest.of(index, size));
+        Page<Track> foundedTracks = trackRepo.search(existedTrackIds, keyword, PageRequest.of(index - 1, size));
         return pageMapper.toPageResponse(foundedTracks, trackMapper::toTrackPreviewDTO);
     }
 

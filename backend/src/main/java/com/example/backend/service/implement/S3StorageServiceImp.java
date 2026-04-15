@@ -60,7 +60,6 @@ public class S3StorageServiceImp implements S3StorageService {
 
     @Override
     public String getGetPresignedUrl(String fileKey, String bucketName) {
-        // Guard: tránh URI lỗi khi key null hoặc rỗng
         if (fileKey == null || fileKey.isBlank()) return null;
 
         GetObjectRequest getObjectRequest = GetObjectRequest.builder()
@@ -68,11 +67,15 @@ public class S3StorageServiceImp implements S3StorageService {
                 .key(fileKey)
                 .build();
 
-        return s3Presigner.presignGetObject(b -> b
-                .signatureDuration(Duration.ofMinutes(10))
+        String url = s3Presigner.presignGetObject(b -> b
+                .signatureDuration(Duration.ofHours(24))
                 .getObjectRequest(getObjectRequest)
                 .build()
         ).url().toString();
+
+        System.out.println(url);
+
+        return url;
     }
 
     @Override

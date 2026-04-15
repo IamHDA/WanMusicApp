@@ -67,7 +67,8 @@ public class SecurityConfig {
                                 "/webjars/**",
                                 "/swagger-resources/**",
                                 "/api/v1/payments/webhook",
-                                "/error"
+                                "/error",
+                                "/ws/**"
                                 ).permitAll()
                         .anyRequest().authenticated()
                 )

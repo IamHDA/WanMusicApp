@@ -24,7 +24,7 @@ public class TagController {
 
     @PostMapping("/createTag")
     @PreAuthorize( "hasRole('ADMIN')")
-    public ResponseEntity<String> createTag(@RequestBody CreateTagRequestDTO dto){
+    public ResponseEntity<TagDTO> createTag(@RequestBody CreateTagRequestDTO dto){
         return ResponseEntity.ok(tagService.createTag(dto));
     }
 

@@ -1,5 +1,6 @@
 package com.example.backend.dto.track;
 
+import com.example.backend.dto.ContributorDTO;
 import com.example.backend.dto.TagDTO;
 
 import java.util.List;
@@ -10,5 +11,6 @@ public record TrackAdminReviewDTO(
         int duration,
         String trackUrl,
         String thumbnailUrl,
-        List<TagDTO> tags
+        List<TagDTO> tags,
+        List<ContributorDTO> contributors
 ) {}

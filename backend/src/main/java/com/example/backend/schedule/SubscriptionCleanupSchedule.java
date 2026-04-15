@@ -1,4 +1,4 @@
-package com.example.backend.service;
+package com.example.backend.schedule;
 
 import com.example.backend.Enum.SubscriptionType;
 import com.example.backend.entity.Member;
@@ -19,7 +19,7 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-public class SubscriptionCleanupService {
+public class SubscriptionCleanupSchedule {
     private final SubscriptionRepository subscriptionRepo;
     private final MemberRepository memberRepo;
 
@@ -35,7 +35,7 @@ public class SubscriptionCleanupService {
         log.info("[CRON JOB] Bắt đầu quét các gói Premium đã hết hạn...");
 
         LocalDate today = LocalDate.now();
-        List<Subscription> expiredSubs = subscriptionRepo.findAllByIsActiveTrueAndEndDateBefore(today);
+        List<Subscription> expiredSubs = subscriptionRepo.findAllByActiveTrueAndEndDateBefore(today);
 
         if (expiredSubs.isEmpty()) {
             log.info("[CRON JOB] Không có gói Premium nào hết hạn cần xử lý.");

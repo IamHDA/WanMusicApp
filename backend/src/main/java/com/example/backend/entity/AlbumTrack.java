@@ -16,6 +16,7 @@ public class AlbumTrack {
 
     @EmbeddedId
     private AlbumTrackId id;
+
     @Column(nullable = false)
     private int position;
 
@@ -33,5 +34,6 @@ public class AlbumTrack {
         this.album = album;
         this.track = track;
         this.position = position;
+        this.id = new AlbumTrackId(album.getId(), track.getId());
     }
 }

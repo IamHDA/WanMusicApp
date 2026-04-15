@@ -2,13 +2,13 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.InteractionType;
 import com.example.backend.dto.CreateInteractionRequestDTO;
-import com.example.backend.entity.Member;
-import com.example.backend.entity.Track;
-import com.example.backend.entity.UserInteraction;
+import com.example.backend.entity.*;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.repository.TrackRepository;
 import com.example.backend.repository.UserInteractionRepository;
+import com.example.backend.repository.UserTagPreferenceRepository;
 import com.example.backend.service.UserInteractionService;
+import com.example.backend.entity.EmbeddedId.UserTagPreferenceId;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,38 +23,43 @@ public class UserInteractionServiceImp implements UserInteractionService {
     private final AuthenticationServiceImp authenticationService;
     private final MemberRepository memberRepo;
     private final TrackRepository trackRepo;
+    private final UserTagPreferenceRepository userTagPrefRepo;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void addInteraction(Member member, Track track, InteractionType type) {
+    public String addInteraction(CreateInteractionRequestDTO dto) {
+        Member member = memberRepo.findById(authenticationService.getCurrentMemberId())
+                .orElseThrow(() -> new RuntimeException("Member not found!"));
+
+        Track track = trackRepo.findById(dto.trackId())
+                .orElseThrow(() -> new RuntimeException("Track not found!"));
+
+        InteractionType type = InteractionType.valueOf(dto.interactionType());
+
         UserInteraction interaction = new UserInteraction();
         interaction.setMember(member);
         interaction.setTrack(track);
         interaction.setType(type);
         interaction.setTime(LocalDateTime.now());
-        interaction.setDuration(0);
+        // Gán đúng thời gian nghe thực tế từ FE gửi lên
+        interaction.setDuration(dto.duration());
 
         userInteractionRepo.save(interaction);
-    }
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public String addInteraction(CreateInteractionRequestDTO dto) {
-        UserInteraction interaction = new UserInteraction();
-        Member member = memberRepo.findById(authenticationService.getCurrentMemberId()).orElseThrow(()-> new RuntimeException("Member not found!"));
-        InteractionType type = InteractionType.valueOf(dto.interactionType());
+        // LOGIC THỐNG KÊ GỢI Ý (Chỉ chạy khi loại tương tác là PLAY)
+        if (type.equals(InteractionType.PLAY)) {
+            // Ngưỡng đề xuất: Nghe >= 30s VÀ >= 50% bài hát
+            if (dto.duration() >= 30 && dto.duration() >= (track.getDuration() / 2)) {
+                for (TrackTag trackTag : track.getTags()) {
+                    Tag tag = trackTag.getTag();
+                    UserTagPreference pref = userTagPrefRepo.findById(new UserTagPreferenceId(member.getId(), tag.getId()))
+                            .orElse(new UserTagPreference(member, tag, 0));
 
-        if(type.equals(InteractionType.PLAY)){
-            Track track = trackRepo.findById(dto.trackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
-            interaction.setTrack(track);
-            interaction.setDuration(dto.duration());
+                    pref.setScore(pref.getScore() + 1); // Tích lũy gu âm nhạc
+                    userTagPrefRepo.save(pref);
+                }
+            }
         }
-
-        interaction.setDuration(0);
-        interaction.setMember(member);
-        interaction.setType(type);
-        interaction.setTime(LocalDateTime.now());
-
-        return "Added interaction successfully!";
+        return "Interaction recorded";
     }
 }

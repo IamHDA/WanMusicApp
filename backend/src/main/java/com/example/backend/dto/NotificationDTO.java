@@ -5,6 +5,8 @@ import com.example.backend.entity.EmbeddedId.FriendshipId;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Getter
 @Setter
 public class NotificationDTO {
@@ -13,8 +15,9 @@ public class NotificationDTO {
     private Long jamSessionId;
     private Long trackId;
     private Long playlistId;
-    private FriendshipId friendRequestId;
+    private Long friendRequestSenderId;
     private String message;
     private NotificationType type;
+    private LocalDateTime createdAt;
 
 }

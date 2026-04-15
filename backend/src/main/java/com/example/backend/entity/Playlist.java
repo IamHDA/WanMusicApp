@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -38,6 +39,12 @@ public class Playlist {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     private List<PlaylistTrack> tracks;
+
+    @OneToMany(
+            mappedBy = "playlist",
+            fetch = FetchType.LAZY
+    )
+    private List<Notification> notifications = new ArrayList<>();
 
     @OneToMany(
             mappedBy = "playlist",

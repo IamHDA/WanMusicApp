@@ -5,6 +5,7 @@ import com.example.backend.dto.CreateNotificationDTO;
 import com.example.backend.dto.NotificationDTO;
 import com.example.backend.entity.Member;
 import com.example.backend.entity.Notification;
+import com.example.backend.mapper.NotificationMapper;
 import com.example.backend.repository.MemberRepository;
 import com.example.backend.repository.NotificationRepository;
 import com.example.backend.repository.TrackRepository;
@@ -15,6 +16,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -23,6 +26,7 @@ public class NotificationServiceImp implements NotificationService {
     private final MemberRepository memberRepo;
     private final NotificationRepository notificationRepo;
     private final SimpMessagingTemplate simpMessagingTemplate;
+    private final NotificationMapper notificationMapper;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -46,7 +50,7 @@ public class NotificationServiceImp implements NotificationService {
 
             notificationDTO.setType(NotificationType.FRIEND_REQUEST);
             notificationDTO.setMessage(notification.getMessage());
-            notificationDTO.setFriendRequestId(dto.getFriendRequestId());
+            notificationDTO.setFriendRequestSenderId(dto.getFriendRequestSenderId());
         }else if(dto.getNotificationType().equals(NotificationType.PLAYLIST_COLLABORATION)){
             notification.setTitle("Playlist Collaboration");
             notification.setMessage(dto.getSenderName() + " invited you to collaborate on a playlist!");
@@ -66,11 +70,21 @@ public class NotificationServiceImp implements NotificationService {
         }
 
         notification.setReceiver(receiver);
-        notification.setCreatedAt(LocalDateTime.now());
+        notification.setCreatedAt(LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh")));
         notification.setRead(false);
 
         notificationRepo.save(notification);
 
+        notificationDTO.setNotificationId(notification.getId());
+
         simpMessagingTemplate.convertAndSendToUser(String.valueOf(dto.getTargetId()), "/queue/notice", notificationDTO);
+    }
+
+    @Override
+    public List<NotificationDTO> getNotifications(Long receiverId) {
+        return notificationRepo.findByReceiver_IdOrderByCreatedAtDesc(receiverId)
+                .stream()
+                .map(notificationMapper::toDTO)
+                .toList();
     }
 }

@@ -7,6 +7,7 @@ import com.example.backend.dto.user.UpdateArtistProfileRequestDTO;
 
 public interface ArtistProfileService {
     ArtistProfileDTO getProfile(Long artistId);
+    ArtistProfileDTO getMyProfile();
 
     String createArtistProfileRequest(CreateArtistProfileRequestDTO dto);
 

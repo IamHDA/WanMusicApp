@@ -1,10 +1,13 @@
 package com.example.backend.service;
 
 import com.example.backend.dto.CreateJamInvitationRequestDTO;
-import com.example.backend.dto.jam.AcceptInvitationRequestDTO;
+import com.example.backend.dto.jam.JamParticipantRequestDTO;
 
 public interface JamParticipantService {
 
-    String joinJam(AcceptInvitationRequestDTO request);
+    Long joinJamById(JamParticipantRequestDTO request);
     String inviteMember(CreateJamInvitationRequestDTO request);
+    String leaveJam(JamParticipantRequestDTO request);
+
+    Long joinJamByCode(JamParticipantRequestDTO dto);
 }

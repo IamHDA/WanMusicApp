@@ -1,5 +1,7 @@
 package com.example.backend.entity;
 
+import com.example.backend.Enum.InteractionType;
+import com.example.backend.Enum.JamInteractionStatus;
 import com.example.backend.Enum.NotificationType;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.*;
@@ -24,8 +26,9 @@ public class JamNotification {
     @Column(length = 100, nullable = false)
     private String message;
     @Enumerated(EnumType.STRING)
-    @Column(name = "notificationType", nullable = false)
+    @Column(name = "notification_type", nullable = false, length = 50)
     private NotificationType type;
+    private JamInteractionStatus status;
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     @Column(name = "created_at", nullable = false)
     private LocalDateTime createdAt;

@@ -51,7 +51,7 @@ public class PaymentServiceImp implements PaymentService {
         Long memberId = authenticationService.getCurrentMemberId();
         Member member = memberRepo.findById(memberId).orElseThrow(() -> new RuntimeException("Member not found!"));
 
-        if (member.getSubscriptionType() == SubscriptionType.PREMIUM){
+        if (member.getSubscriptionType() == SubscriptionType.PREMIUM) {
             throw new RuntimeException("You are Preminum already!");
         }
         SubscriptionPlan plan = subscriptionPlanRepo.findById(request.planId()).orElseThrow(() -> new RuntimeException("SubscriptionPlan not found!"));
@@ -68,7 +68,7 @@ public class PaymentServiceImp implements PaymentService {
         payment.setDurationDays(plan.getDurationDays());
         paymentRepo.save(payment);
 
-        try{
+        try {
             // Call PayOS SDK
             CreatePaymentLinkRequest paymentRequest = CreatePaymentLinkRequest.builder()
                     .orderCode(orderCode)
@@ -91,27 +91,30 @@ public class PaymentServiceImp implements PaymentService {
     }
 
     @Override
+    @Transactional(rollbackFor = Exception.class) // QUAN TRỌNG: Bắt buộc phải có để tránh rác dữ liệu
     public void handleWebhook(Webhook webhookBody) {
-        try{
-            // verify webhook payOS (Preventing webhook spoofing)
+        try {
+            // 1. Verify webhook payOS
             WebhookData data = payOS.webhooks().verify(webhookBody);
 
-            Payment payment = paymentRepo.findByOrderCode(data.getOrderCode()).orElseThrow(() -> new RuntimeException("Payment not found!"));
-            // Idempotent check: skip if PAID status already
-            if(payment.getStatus() == PaymentStatus.PAID){
+            Payment payment = paymentRepo.findByOrderCode(data.getOrderCode())
+                    .orElseThrow(() -> new RuntimeException("Payment not found!"));
+
+            // 2. Idempotent check: skip if it's already processed
+            if (payment.getStatus() != PaymentStatus.PENDING) {
                 return;
             }
 
-            // if checkout success
-            if("00".equals(data.getCode()) || "PAID".equals(data.getCode())){
+            // 3. Nếu thanh toán thành công (PayOS thường trả về code "00")
+            if ("00".equals(data.getCode()) || "PAID".equals(data.getCode())) {
                 // Update payment
                 payment.setStatus(PaymentStatus.PAID);
                 payment.setPaidAt(LocalDateTime.now());
                 paymentRepo.save(payment);
 
-                // Get snapshot payment's infor
                 Member member = payment.getMember();
-                SubscriptionPlan plan = subscriptionPlanRepo.findById(payment.getPlanId()).orElseThrow(() -> new RuntimeException("Subcription plan not found!"));
+                SubscriptionPlan plan = subscriptionPlanRepo.findById(payment.getPlanId())
+                        .orElseThrow(() -> new RuntimeException("Subcription plan not found!"));
 
                 // Create Subcription
                 Subscription subscription = new Subscription();
@@ -123,12 +126,28 @@ public class PaymentServiceImp implements PaymentService {
                 subscription.setActive(true);
                 subscriptionRepo.save(subscription);
 
+                // Update Member
                 member.setSubscriptionType(SubscriptionType.PREMIUM);
                 memberRepo.save(member);
+
+                log.info("Payment success and Subscription created for user: {}", member.getId());
+            }
+            // 4. NẾU THẤT BẠI HOẶC BỊ HUỶ
+            else {
+                log.warn("Payment failed or cancelled. PayOS Code: {}", data.getCode());
+                // Kiểm tra desc của PayOS, nếu chứa chữ cancel thì gán CANCELLED, ngược lại FAILED
+                if (data.getDesc() != null && data.getDesc().toLowerCase().contains("cancel")) {
+                    payment.setStatus(PaymentStatus.CANCELLED);
+                } else {
+                    payment.setStatus(PaymentStatus.FAILED);
+                }
+                paymentRepo.save(payment);
             }
 
         } catch (Exception e) {
             log.error("Webhook processing failed: ", e);
+            // QUAN TRỌNG: Phải ném lỗi ra để Spring Boot rollback lại các lệnh save() trước đó nếu có
+            throw new RuntimeException("Lỗi khi xử lý Webhook: " + e.getMessage());
         }
     }
 }

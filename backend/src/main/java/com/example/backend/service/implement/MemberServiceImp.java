@@ -30,6 +30,7 @@ public class MemberServiceImp implements MemberService {
     private final FriendshipService friendshipService;
     private final FriendUtil friendUtil;
     private final S3StorageService s3StorageService;
+    private final CacheVersionService cacheVersionService;
 
     @Override
     @Transactional(rollbackFor = Exception.class)
@@ -47,6 +48,9 @@ public class MemberServiceImp implements MemberService {
         if (dto.displayName() != null && !dto.displayName().trim().isEmpty()) {
             currentMember.setFullName(dto.displayName());
         }
+
+        cacheVersionService.bumpMemberVersion();
+
         return "Profile updated successfully!";
     }
 
@@ -55,6 +59,8 @@ public class MemberServiceImp implements MemberService {
         Member member = memberRepo.findById(memberId).orElseThrow(() -> new RuntimeException("Member not found!"));
 
         MemberProfileDTO memberProfileDTO = memberMapper.toProfileDTO(member);
+
+        memberProfileDTO.setSubscriptionType(member.getSubscriptionType().name());
 
         Long currentUserId = authenticationService.getCurrentMemberId();
         String status = friendUtil.getFriendshipStatus(currentUserId, memberId);
@@ -84,6 +90,7 @@ public class MemberServiceImp implements MemberService {
         myProfileDTO.setId(member.getId());
         myProfileDTO.setDisplayName(member.getFullName());
         myProfileDTO.setAvatarUrl(s3StorageService.getGetPresignedUrl(member.getAvatarKey(), "avatars"));
+        myProfileDTO.setSubscriptionType(member.getSubscriptionType().name());
 
         artistProfileRepo.findByMemberId(currentUserId).ifPresent(artistProfile -> {
             myProfileDTO.setArtistStatus(artistProfile.getStatus().name());

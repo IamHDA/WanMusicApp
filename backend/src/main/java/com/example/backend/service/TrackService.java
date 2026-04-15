@@ -11,6 +11,7 @@ import java.util.List;
 
 public interface TrackService {
 
+    TrackPreviewDTO getTrack(Long trackId);
     PageResponse<TrackAdminReviewDTO> getTracksByStatus(TrackStatus status, int index, int size);
     TrackDraftResponseDTO createDraft(TrackCreateDraftDTO dto) throws IOException;
     PageResponse<TrackPreviewDTO> searchTracksAddToPlaylist(List<Long> existedTrackIds, String keyword, int index, int size);

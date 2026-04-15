@@ -23,9 +23,10 @@ public class Album {
     private Long id;
     @Column(length = 50, nullable = false)
     private String title;
-    @Column(name = "thumbnail_key", length = 50, nullable = false)
+    @Column(name = "thumbnail_key", length = 200, nullable = false)
     private String thumbnailKey;
     @Enumerated(EnumType.STRING)
+    @Column(length = 50, nullable = false)
     private AlbumStatus status;
     @Column(name = "realease_date", nullable = false)
     @JsonFormat(pattern = "yyyy-MM-dd")

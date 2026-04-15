@@ -1,11 +1,13 @@
 package com.example.backend.service;
 
-import com.example.backend.dto.jam.CreateJamSessionRequestDTO;
-import com.example.backend.dto.jam.UpdateJamSessionRequestDTO;
+import com.example.backend.dto.jam.*;
 
 public interface JamSessionService {
 
-    String createJamSession(CreateJamSessionRequestDTO dto);
+    void updateJamSessionContext(UpdateJamSessionContextRequestDTO dto);
+    JamDTO getJamSessionById(Long jamSessionId);
+    JamPreviewDTO createJamSession(CreateJamSessionRequestDTO dto);
     String updateJamSession(UpdateJamSessionRequestDTO dto);
     String deleteJamSession(Long jamSessionId);
+
 }

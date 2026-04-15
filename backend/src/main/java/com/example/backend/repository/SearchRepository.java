@@ -114,11 +114,18 @@ public class SearchRepository {
                 "CASE WHEN COUNT(f.id) > 0 THEN true ELSE false END " +
                 "FROM ArtistProfile a " +
                 "LEFT JOIN Follower f ON a.id = f.artist.id AND f.follower.id = :currentUserId " +
-                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) AND a.member.id <> :currentUserId AND a.status = 'VERIFIED'" +
-                "GROUP BY a";
+                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) " +
+                "AND a.member.id <> :currentUserId " +
+                "AND a.status = 'VERIFIED' " +
+                "GROUP BY a " +
+                "ORDER BY CASE " +
+                "  WHEN LOWER(a.stageName) LIKE LOWER(:prefixKeyword) THEN 0 " +
+                "  ELSE 1 " +
+                "END, a.stageName ASC";
 
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
         query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("prefixKeyword", keyword + "%");
         query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
@@ -134,11 +141,12 @@ public class SearchRepository {
                 .collect(Collectors.toList());
     }
 
-    private Long searchArtistCount(String keyword){
-        String jpql = "SELECT COUNT(DISTINCT a) " +
+    private Long searchArtistCount(String keyword) {
+        String jpql = "SELECT COUNT(DISTINCT a.id) " +
                 "FROM ArtistProfile a " +
-                "LEFT JOIN Follower f ON a.id = f.artist.id AND f.follower.id = :currentUserId " +
-                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) AND a.id <> :currentUserId ";
+                "WHERE LOWER(a.stageName) LIKE LOWER(:keyword) " +
+                "AND a.member.id <> :currentUserId " +
+                "AND a.status = 'VERIFIED'";
 
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("keyword", "%" + keyword + "%");
@@ -150,32 +158,46 @@ public class SearchRepository {
         String jpql = "SELECT DISTINCT t FROM Track t " +
                 "LEFT JOIN FETCH t.contributions c " +
                 "LEFT JOIN FETCH c.contributor " +
-                "WHERE LOWER(t.title) LIKE LOWER(:keyword) AND t.status = 'PUBLISHED'";
+                "WHERE LOWER(t.title) LIKE LOWER(:keyword) " +
+                "AND t.status = 'PUBLISHED' " +
+                "ORDER BY CASE " +
+                "   WHEN LOWER(t.title) LIKE LOWER(:prefixKeyword) THEN 0 " +
+                "   ELSE 1 " +
+                "END, t.title ASC";
 
 
         TypedQuery<Track> query = entityManager.createQuery(jpql, Track.class);
         query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("prefixKeyword", keyword + "%");
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
-
-
 
         return query.getResultList().stream()
                 .map(trackMapper::toTrackPreviewDTO)
                 .collect(Collectors.toList());
     }
 
-    private Long searchTrackCount(String keyword){
-        String jpql = "SELECT COUNT(DISTINCT t) FROM Track t WHERE LOWER(t.title) LIKE LOWER(:keyword)";
+    private Long searchTrackCount(String keyword) {
+        String jpql = "SELECT COUNT(DISTINCT t.id) " +
+                "FROM Track t " +
+                "WHERE LOWER(t.title) LIKE LOWER(:keyword) " +
+                "AND t.status = 'PUBLISHED'";
+
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("keyword", "%" + keyword + "%");
         return query.getSingleResult();
     }
 
     private List<AlbumPreviewDTO> searchAlbums(String keyword, int pageSize, int offset) {
-        String jpql = "SELECT DISTINCT a FROM Album a WHERE LOWER(a.title) LIKE LOWER(:keyword)";
+        String jpql = "SELECT DISTINCT a FROM Album a " +
+                "WHERE LOWER(a.title) LIKE LOWER(:keyword) " +
+                "ORDER BY CASE " +
+                "   WHEN LOWER(a.title) LIKE LOWER(:prefixKeyword) THEN 0 " +
+                "   ELSE 1 " +
+                "END, a.title ASC";
         TypedQuery<Album> query = entityManager.createQuery(jpql, Album.class);
         query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("prefixKeyword", keyword + "%");
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
 
@@ -184,8 +206,11 @@ public class SearchRepository {
                 .collect(Collectors.toList());
     }
 
-    private Long searchAlbumCount(String keyword){
-        String jpql = "SELECT COUNT(DISTINCT a) FROM Album a WHERE LOWER(a.title) LIKE LOWER(:keyword)";
+    private Long searchAlbumCount(String keyword) {
+        String jpql = "SELECT COUNT(DISTINCT a.id) " +
+                "FROM Album a " +
+                "WHERE LOWER(a.title) LIKE LOWER(:keyword)";
+
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("keyword", "%" + keyword + "%");
         return query.getSingleResult();
@@ -202,14 +227,21 @@ public class SearchRepository {
                         "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
                         "AND m.id <> :currentUserId " +
                         "ORDER BY CASE " +
-                        "WHEN f IS NULL THEN 1 " +
-                        "WHEN f.status = 'PENDING' THEN 2 " +
-                        "WHEN f.status = 'ACCEPTED' THEN 3 " +
-                        "ELSE 0 END DESC";
+                        "   WHEN LOWER(m.fullName) LIKE LOWER(:prefixKeyword) THEN 0 " +
+                        "   ELSE 1 " +
+                        "END ASC, " +
+                        "CASE " +
+                        "   WHEN f IS NULL THEN 1 " +
+                        "   WHEN f.status = 'PENDING' THEN 2 " +
+                        "   WHEN f.status = 'ACCEPTED' THEN 3 " +
+                        "   ELSE 0 " +
+                        "END DESC, " +
+                        "m.fullName ASC";
         TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
         Long currentUserId = authenticationService.getCurrentMemberId();
 
         query.setParameter("keyword", "%" + keyword + "%");
+        query.setParameter("prefixKeyword", keyword + "%");
         query.setParameter("currentUserId", currentUserId);
         query.setFirstResult(offset);
         query.setMaxResults(pageSize);
@@ -232,13 +264,13 @@ public class SearchRepository {
 //
 //        return memberProfilePreviewDTOS;
 
-        System.out.println(currentUserId);
-
         return query.getResultList()
                 .stream()
                 .map(result -> {
                     Member member = (Member) result[0];
                     Friendship friendship = result[1] != null ? (Friendship) result[1] : null;
+
+                    System.out.println("MemberId: " + member.getId() + " Friendship: " + friendship);
 
                     MemberProfilePreviewDTO memberProfilePreviewDTO = memberMapper.toPreviewDTO(member);
                     memberProfilePreviewDTO.setFriendStatus(friendUtil.getFriendshipStatus(friendship, currentUserId));
@@ -248,9 +280,17 @@ public class SearchRepository {
                 .toList();
     }
 
-    private Long searchMemberCount(String keyword){
-        String jpql = "SELECT COUNT(DISTINCT m) FROM Member m " +
-                "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) AND m.id <> :currentUserId";
+    private Long searchMemberCount(String keyword) {
+        String jpql =
+                "SELECT COUNT(DISTINCT m.id) " +
+                        "FROM Member m " +
+                        "LEFT JOIN Friendship f ON (" +
+                        "   (f.member.id = m.id AND f.friend.id = :currentUserId) OR " +
+                        "   (f.friend.id = m.id AND f.member.id = :currentUserId)" +
+                        ") " +
+                        "WHERE LOWER(m.fullName) LIKE LOWER(:keyword) " +
+                        "AND m.id <> :currentUserId";
+
         TypedQuery<Long> query = entityManager.createQuery(jpql, Long.class);
         query.setParameter("keyword", "%" + keyword + "%");
         query.setParameter("currentUserId", authenticationService.getCurrentMemberId());
@@ -258,13 +298,32 @@ public class SearchRepository {
     }
 
     public Page<MemberProfilePreviewDTO> searchFriends(String query, int pageNumber) {
-        String jpql1 = "SELECT CASE WHEN fr.member.id = :currentUserId THEN fr.friend ELSE fr.member END " +
-                "FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
-                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+        String jpql1 =
+                "SELECT CASE " +
+                        "   WHEN fr.member.id = :currentUserId THEN fr.friend " +
+                        "   ELSE fr.member " +
+                        "END " +
+                        "FROM Friendship fr " +
+                        "WHERE LOWER(fr.friend.fullName) LIKE LOWER(:query) " +
+                        "   OR LOWER(fr.member.fullName) LIKE LOWER(:query) " +
+                        "ORDER BY CASE " +
+                        "   WHEN LOWER(CASE " +
+                        "       WHEN fr.member.id = :currentUserId THEN fr.friend.fullName " +
+                        "       ELSE fr.member.fullName " +
+                        "   END) LIKE LOWER(:prefixQuery) THEN 0 " +
+                        "   ELSE 1 " +
+                        "END ASC, " +
+                        "CASE " +
+                        "   WHEN fr.member.id = :currentUserId THEN fr.friend.fullName " +
+                        "   ELSE fr.member.fullName " +
+                        "END ASC";
+
+        Long currentUserId = authenticationService.getCurrentMemberId();
 
         TypedQuery<Member> fetch = entityManager.createQuery(jpql1, Member.class);
         fetch.setParameter("query", "%" + query + "%");
-        fetch.setParameter("currentUserId", authenticationService.getCurrentMemberId());
+        fetch.setParameter("prefixQuery", query + "%");
+        fetch.setParameter("currentUserId", currentUserId);
         fetch.setFirstResult((pageNumber - 1) * 5);
         fetch.setMaxResults(5);
 
@@ -276,12 +335,20 @@ public class SearchRepository {
                 })
                 .toList();
 
-        String jpql2 = "SELECT COUNT(fr) FROM Friendship fr WHERE LOWER(fr.friend.fullName) " +
-                "LIKE LOWER(:query) OR LOWER(fr.member.fullName) LIKE LOWER(:query)";
+        String countJpql =
+                "SELECT COUNT(DISTINCT fr.id) " +
+                        "FROM Friendship fr " +
+                        "WHERE LOWER(CASE " +
+                        "   WHEN fr.member.id = :currentUserId THEN fr.friend.fullName " +
+                        "   ELSE fr.member.fullName " +
+                        "END) LIKE LOWER(:query)";
 
-        TypedQuery<Long> count = entityManager.createQuery(jpql2, Long.class);
-        Long totalItems = count.getSingleResult();
+        TypedQuery<Long> countQuery = entityManager.createQuery(countJpql, Long.class);
+        countQuery.setParameter("query", "%" + query + "%");
+        countQuery.setParameter("currentUserId", currentUserId);
 
-        return new PageImpl<>(content, PageRequest.of(pageNumber, 5), totalItems);
+        Long total = countQuery.getSingleResult();
+
+        return new PageImpl<>(content, PageRequest.of(pageNumber, 5), total);
     }
 }
