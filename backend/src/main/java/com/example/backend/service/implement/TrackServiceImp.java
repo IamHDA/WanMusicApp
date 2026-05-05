@@ -35,8 +35,9 @@ import java.net.http.HttpClient;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -174,34 +175,50 @@ public class TrackServiceImp implements TrackService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public String submitTrack(TrackSubmitDTO dto) {
-        Track track = trackRepo.findById(dto.id()).orElseThrow(()-> new RuntimeException("Track not found!"));
-        if(track.getStatus() != TrackStatus.DRAFT) throw new RuntimeException("Track is not in draft status!");
+        Track track = trackRepo.findById(dto.id())
+                .orElseThrow(() -> new RuntimeException("Track not found!"));
+
+        if (track.getStatus() != TrackStatus.DRAFT) {
+            throw new RuntimeException("Track is not in draft status!");
+        }
 
         track.getTags().clear();
         track.getContributions().clear();
-
         trackRepo.flush();
 
         List<Tag> tags = tagRepo.findAllById(dto.tagIds());
-        for(Tag tag : tags){
+        for (Tag tag : tags) {
             track.getTags().add(new TrackTag(track, tag));
         }
 
-        // Ép Owner luôn có
         Long currentUserId = authenticationService.getCurrentMemberId();
         ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
-                .orElseThrow(()-> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được submit track!"));
-        track.getContributions().add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
+                .orElseThrow(() -> new RuntimeException("Chỉ tài khoản Artist hợp lệ mới được submit track!"));
 
-        for(ContributorDTO contributorDTO : dto.contributors()){
+        Set<Long> addedArtistIds = new HashSet<>();
+
+        track.getContributions().add(new ArtistContribution(track, ownerProfile, ContributorRole.OWNER));
+        addedArtistIds.add(ownerProfile.getId());
+
+        for (ContributorDTO contributorDTO : dto.contributors()) {
+            if(contributorDTO.getId() == null)
+                continue;
+
             ArtistProfile contributor = artistProfileRepo.findById(contributorDTO.getId())
-                    .orElseThrow(()-> new RuntimeException("Artist ID không tồn tại trên hệ thống: " + contributorDTO.getId() + ". Vui lòng kiểm tra lại Dữ liệu Frontend truyền lên !"));
+                    .orElseThrow(() -> new RuntimeException(
+                            "Artist ID không tồn tại trên hệ thống: " + contributorDTO.getId()
+                                    + ". Vui lòng kiểm tra lại Dữ liệu Frontend truyền lên !"));
+
+            if (addedArtistIds.contains(contributor.getId())) {
+                continue;
+            }
+
             ContributorRole role = ContributorRole.valueOf(contributorDTO.getRole().toUpperCase());
             track.getContributions().add(new ArtistContribution(track, contributor, role));
+            addedArtistIds.add(contributor.getId());
         }
 
         track.setStatus(TrackStatus.PENDING);
-
         return "Track submitted successfully!";
     }
 
@@ -217,18 +234,27 @@ public class TrackServiceImp implements TrackService {
         Long currentUserId = authenticationService.getCurrentMemberId();
         ArtistProfile ownerProfile = artistProfileRepo.findByMemberId(currentUserId)
                 .orElseThrow(()-> new RuntimeException("Bạn không phải Artist!"));
-        
-        List<Track> tracks = trackRepo.findTracksByOwnerId(ownerProfile.getId());
-        List<TrackArtistDTO> trackDTOs = tracks.stream().map(t -> new TrackArtistDTO(
-                t.getId(),
-                t.getTitle(),
-                t.getThumbnailKey() != null ? s3StorageService.getGetPresignedUrl(t.getThumbnailKey(), "thumbnails") : null,
-                t.getDuration(),
-                t.getStatus().name()
-        )).toList();
+
+        List<ArtistContribution> contribution = ownerProfile.getContributions();
+
+        List<TrackArtistDTO> trackDTOs = contribution.stream()
+                .filter(c -> c.getRole() == ContributorRole.OWNER)
+                .map(c -> {
+                    Track t = c.getTrack();
+                    return new TrackArtistDTO(
+                            t.getId(),
+                            t.getTitle(),
+                            t.getThumbnailKey() != null
+                                    ? s3StorageService.getGetPresignedUrl(t.getThumbnailKey(), "thumbnails")
+                                    : null,
+                            t.getDuration(),
+                            t.getStatus().name()
+                    );
+                })
+                .toList();
         
         long totalFans = ownerProfile.getFollowers() != null ? ownerProfile.getFollowers().size() : 0;
-        long totalDrops = tracks.size();
+        long totalDrops = trackDTOs.size();
         
         return new ArtistDashboardDTO(totalFans, totalDrops, trackDTOs);
     }

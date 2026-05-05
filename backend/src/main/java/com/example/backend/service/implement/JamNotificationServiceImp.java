@@ -48,9 +48,9 @@ public class JamNotificationServiceImp implements JamNotificationService {
         Optional<JamSession> jamSession = jamSessionRepo.findById(request.getJamId());
         Member member = memberRepo.findByEmail(email).orElseThrow(()-> new RuntimeException("Member not found!"));
         Track track = null;
-        if(!request.getNotificationType().equals(NotificationType.JAM_JOIN))
+        if(!request.getNotificationType().equals(NotificationType.JAM_JOIN) && !request.getNotificationType().equals(NotificationType.JAM_CLOSED))
             track = trackRepo.findById(request.getTrackId()).orElseThrow(()-> new RuntimeException("Track not found!"));
-        JamNotification jamNotification = new JamNotification();
+        JamNotification jamNotification = new JamNotification();    
 
         if(jamSession.isEmpty())
             throw new RuntimeException("Jam session not found!");
@@ -83,8 +83,11 @@ public class JamNotificationServiceImp implements JamNotificationService {
                 if(isOwner) message = "Host went back to the previous song";
                 else message = member.getFullName() + " wants to go back to the previous song";
             }
-        }else if(request.getNotificationType().equals(NotificationType.JAM_JOIN))
+        }else if(request.getNotificationType().equals(NotificationType.JAM_JOIN)){
             message = member.getFullName() + " joined the jam";
+        }else if(request.getNotificationType().equals(NotificationType.JAM_CLOSED)){
+            message = "Jam session has been closed";
+        }
 
         JamInteractionStatus status = null;
 
@@ -117,31 +120,31 @@ public class JamNotificationServiceImp implements JamNotificationService {
         );
 
         return jamNotificationDTO;
-    }
+                    }/**/
 
-    @Override
-    public PageResponse<JamNotificationDTO> getJamNotifications(GetJamNotificationRequestDTO dto) {
-        String key = "/jam/notification/" + "/" + dto.jamId() + cacheVersionService.getJamNotificationVersion(dto.jamId());
+                    @Override
+                    public PageResponse<JamNotificationDTO> getJamNotifications(GetJamNotificationRequestDTO dto) {
+                        String key = "/jam/notification/" + "/" + dto.jamId() + cacheVersionService.getJamNotificationVersion(dto.jamId());
 
-        PageResponse<JamNotificationDTO> response = null;
+                        PageResponse<JamNotificationDTO> response = null;
 
-        if(redisService.hasKey(key)) response = (PageResponse<JamNotificationDTO>) redisService.get(key);
-        else {
+                        if(redisService.hasKey(key)) response = (PageResponse<JamNotificationDTO>) redisService.get(key);
+                        else {
 
-            response = pageMapper.toPageResponse(jamNotificationRepo.findByJamSessionId(
-                    dto.jamId(),
-                    PageRequest.of(dto.index() - 1, dto.size())
-            ), jamNotificationMapper::toDTO);
+                            response = pageMapper.toPageResponse(jamNotificationRepo.findByJamSessionId(
+                                    dto.jamId(),
+                                    PageRequest.of(dto.index() - 1, dto.size())
+                            ), jamNotificationMapper::toDTO);
 
-            redisService.save(key, response, 60);
-        }
+                                    redisService.save(key, response, 60);
+                        }   
 
-        return response;
-    }
+                        return response;
+                    }
 
-    public static String formatSecondsToMMSS(int totalSeconds) {
-        int minutes = totalSeconds / 60;
-        int seconds = totalSeconds % 60;
-        return String.format("%02d:%02d", minutes, seconds);
-    }
-}
+                    public static String formatSecondsToMMSS(int totalSeconds) {
+                        int minutes = totalSeconds / 60;
+                        int seconds = totalSeconds % 60;
+                        return String.format("%02d:%02d", minutes, seconds);
+                    }
+                }

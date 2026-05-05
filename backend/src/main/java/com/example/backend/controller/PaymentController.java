@@ -35,7 +35,7 @@ public class PaymentController {
             return ResponseEntity.ok("OK");
         } catch (Exception e) {
             log.error("❌ LỖI XỬ LÝ WEBHOOK: {}", e.getMessage());
-            return ResponseEntity.badRequest().body("Invalid webhook");
+            return ResponseEntity.ok("OK");
         }
     }
 }

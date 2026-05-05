@@ -1,5 +1,7 @@
 package com.example.backend.controller;
 
+import com.example.backend.dto.FriendStateDTO;
+import com.example.backend.dto.PageResponse;
 import com.example.backend.service.FriendshipService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -11,6 +13,14 @@ import org.springframework.web.bind.annotation.*;
 public class FriendshipController {
 
     private final FriendshipService friendshipService;
+
+    @GetMapping("/state")
+    public ResponseEntity<PageResponse<FriendStateDTO>> getFriendshipState(
+            @RequestParam("index") Integer index,
+            @RequestParam("size") Integer size
+    ){
+        return ResponseEntity.ok(friendshipService.getFriendsState(index, size));
+    }
 
     @PostMapping("/addFriend/{id}")
     public ResponseEntity<String> addFriend(@PathVariable Long id){

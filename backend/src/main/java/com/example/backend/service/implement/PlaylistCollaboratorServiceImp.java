@@ -119,4 +119,12 @@ public class PlaylistCollaboratorServiceImp implements PlaylistCollaboratorServi
                 .map(pc -> memberMapper.toPreviewDTO(pc.getCollaborator()))
                 .toList();
     }
+
+    @Override
+    public List<String> getCollaboratorPermissions(Long collabId, Long playlistId) {
+        return playlistCollaboratorRepo.findByPlaylist_IdAndCollaborator_Id(playlistId, collabId)
+                .stream()
+                .flatMap(p -> p.getCollabPermission().stream().map(Enum::toString))
+                .toList();
+    }
 }

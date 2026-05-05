@@ -32,6 +32,11 @@ public class MemberController {
         return ResponseEntity.ok(memberService.updateProfile(dto));
     }
 
+    @PostMapping("/followArtist/{artistId}")
+    public ResponseEntity<String> followArtist(@PathVariable Long artistId){
+        return ResponseEntity.ok(memberService.followArtist(artistId));
+    }
+
     @GetMapping("/account-setting")
     public ResponseEntity<AccountSettingsDTO> getAccountSettings() {
         return ResponseEntity.ok(memberService.getAccountSettings());

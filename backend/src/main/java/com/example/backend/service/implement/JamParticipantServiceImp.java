@@ -81,6 +81,14 @@ public class JamParticipantServiceImp implements JamParticipantService {
 
         jamParticipantRepo.deleteBySession_IdAndParticipant_Id(request.jamSessionId(), currentMemberId);
 
+        CreateJamNotificationDTO dto = new CreateJamNotificationDTO();
+        dto.setJamId(request.jamSessionId());
+        dto.setNotificationType(NotificationType.JAM_CLOSED);
+
+        JamNotificationDTO jamnotificationDTO = jamNotificationService.sendJamNotification(dto, null);
+
+        simpMessagingTemplate.convertAndSend("/jam/notification/" + jamnotificationDTO.getJamSessionId(), jamnotificationDTO);
+
         return "Leave jam successfully!";
     }
 

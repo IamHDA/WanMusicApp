@@ -10,7 +10,6 @@ public class JamPlayerStateRequestDTO {
 
     private Long jamId;
     private int currentSeekPosition;
-    private float playbackRate;
 
     @JsonProperty("isPlaying")
     private boolean isPlaying;

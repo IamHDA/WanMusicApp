@@ -39,7 +39,9 @@ public class NotificationServiceImp implements NotificationService {
             notification.setTitle("Jam Invite");
             notification.setMessage(dto.getSenderName() + " invited you to a jam session!");
             notification.setType(NotificationType.JAM_INVITE);
+            notification.setAccepted(false);
 
+            notificationDTO.setAccepted(false);
             notificationDTO.setType(NotificationType.JAM_INVITE);
             notificationDTO.setMessage(notification.getMessage());
             notificationDTO.setJamSessionId(dto.getJamSessionId());

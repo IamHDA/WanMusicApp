@@ -34,6 +34,15 @@ public interface TrackRepository extends JpaRepository <Track, Long>{
 
     @Query("""
         SELECT t FROM Track t
+        WHERE t.status = :status
+    """)
+    Page<Track> findAllByStatus(
+            @Param("status") TrackStatus status,
+            Pageable pageable
+    );
+
+    @Query("""
+        SELECT t FROM Track t
         WHERE (:ids IS NULL OR t.id NOT IN :ids)
         AND LOWER(t.title) LIKE LOWER(CONCAT('%', :keyword, '%'))
         AND t.status = com.example.backend.Enum.TrackStatus.PUBLISHED

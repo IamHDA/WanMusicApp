@@ -11,4 +11,6 @@ public interface MemberService {
     MemberProfileDTO getProfile(Long memberId);
     MyProfileDTO getMyProfile();
     AccountSettingsDTO getAccountSettings();
+
+    String followArtist(Long artistId);
 }
