@@ -1,0 +1,15 @@
+package com.example.backend.service;
+
+import com.example.backend.dto.CreateTagRequestDTO;
+import com.example.backend.dto.TagDTO;
+
+import java.util.List;
+
+public interface TagService {
+
+    TagDTO createTag(CreateTagRequestDTO dto);
+    List<TagDTO> getAllTags();
+    String deleteTag(Long tagId);
+    String updateTag(Long id, CreateTagRequestDTO dto);
+    TagDTO getTag(Long id);
+}
