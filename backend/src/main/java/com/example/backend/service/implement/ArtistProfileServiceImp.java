@@ -2,6 +2,7 @@ package com.example.backend.service.implement;
 
 import com.example.backend.Enum.ArtistProfileStatus;
 import com.example.backend.Enum.ContributorRole;
+import com.example.backend.Enum.TrackStatus;
 import com.example.backend.dto.album.GetAlbumsPaginationRequest;
 import com.example.backend.dto.user.ArtistProfileDTO;
 import com.example.backend.dto.user.CreateArtistProfileRequestDTO;
@@ -56,6 +57,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
         ArtistProfileDTO dto = artistProfileMapper.toArtistProfileDTO(profile);
         dto.setPopularTracks(artistContributionRepo.findByContributor_IdAndRole(artistId, ContributorRole.OWNER)
                 .stream()
+                .filter(ac -> ac.getTrack().getStatus().equals(TrackStatus.PUBLISHED))
                 .map(ac -> trackMapper.toTrackDTO(ac.getTrack()))
                 .toList());
         dto.setFollowed(isFollowed);
@@ -84,6 +86,7 @@ public class ArtistProfileServiceImp implements ArtistProfileService {
 
         dto.setPopularTracks(artistContributionRepo.findByContributor_IdAndRole(artistId, ContributorRole.OWNER)
                 .stream()
+                .filter(ac -> ac.getTrack().getStatus().equals(TrackStatus.PUBLISHED))
                 .map(ac -> trackMapper.toTrackDTO(ac.getTrack()))
                 .toList());
 

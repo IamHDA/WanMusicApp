@@ -74,7 +74,7 @@ public class AlbumServiceImp implements AlbumService {
 
     @Override
     public PageResponse<AlbumPreviewDTO> getAllAlbums(GetAlbumsPaginationRequest request) {
-        Page<Album> albums = albumRepo.findAll(PageRequest.of(request.index() - 1, request.size()));
+        Page<Album> albums = albumRepo.findByStatus(AlbumStatus.PENDING, PageRequest.of(request.index() - 1, request.size()));
         return pageMapper.toPageResponse(albums, albumMapper::toAlbumPreviewDTO);
     }
 

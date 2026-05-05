@@ -40,7 +40,7 @@ public class PlayerServiceImp implements PlayerService {
         // 1. Lấy PlayerState an toàn
         Optional<PlayerState> stateOpt = playerStateRepo.findByMemberId(currentMemberId);
 
-        // NẾU CHƯA TỪNG NGHE GÌ (Trạng thái rỗng) -> Trả về random nhạc (dùng Track lẻ ngoài Album)
+        // NẾU CHƯA TỪNG NGHE GÌ (Trạng thái rỗng) -> Trả về random nhạc
         if (stateOpt.isEmpty() || stateOpt.get().getTrack() == null) {
             Page<Track> generalTracks = trackRepo.findAllByStatus(
                     TrackStatus.PUBLISHED, // Đã sửa thành PUBLISHED
@@ -100,7 +100,7 @@ public class PlayerServiceImp implements PlayerService {
             // LỚP 3: Lưới an toàn (Ultimate Fallback) - Quét toàn bộ kho nhạc
             remainingSlots = pageSize - resultQueue.size();
             if (remainingSlots > 0) {
-                // Tái sử dụng hàm findAllByStatusAndNotInAlbum với status PUBLISHED
+                // Tái sử dụng hàm findAllByStatus với status PUBLISHED
                 Page<Track> fallbackTracks = trackRepo.findAllByStatusAndNotInAlbum(
                         TrackStatus.PUBLISHED,
                         PageRequest.of(index, remainingSlots + 10)

@@ -104,7 +104,7 @@ public class AdminServiceImp implements AdminService {
 
         for(AlbumTrack albumTrack : album.getTracks()){
             Track track = albumTrack.getTrack();
-            track.setStatus(TrackStatus.REJECTED);
+            track.setStatus(TrackStatus.PUBLISHED);
             tracks.add(albumTrack.getTrack());
         }
         trackRepo.saveAll(tracks);
